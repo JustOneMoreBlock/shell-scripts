@@ -33,7 +33,7 @@ elif [ "${OS}" = "CentOS" ] ; then
   rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
   yum -y remove *mysql* php-*
   mv /var/lib/mysql /var/lib/mysql-old
-  yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql sqlite php56w-gd freetype
+  yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype
   /sbin/chkconfig --level 2345 httpd on;
 fi
 
