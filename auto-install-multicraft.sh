@@ -35,7 +35,7 @@ if [ "${OS}" = "Ubuntu" ] ; then
   echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
   apt-get -y update
   export DEBIAN_FRONTEND="noninteractive"
-  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip percona-server-server-5.6
+  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
   mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
   service mysql start
   service apache2 stop
@@ -46,7 +46,7 @@ elif [ "${OS}" = "Debian" ] ; then
   echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
   apt-get -y update
   export DEBIAN_FRONTEND="noninteractive"
-  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip percona-server-server-5.6
+  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
   mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
   service mysql start
   service apache2 stop
@@ -71,7 +71,6 @@ cat > .my.cnf << eof
 user="root"
 pass="${MySQLRoot}"
 eof
-echo "MySQL Root Password: ${MySQLRoot}"
 
 # Multicraft Databases
 mysql -e "CREATE DATABASE daemon;"
@@ -80,6 +79,7 @@ mysql -e "GRANT ALL ON daemon.* to daemon@localhost IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@localhost IDENTIFIED BY '${Panel}';"
 mysql -e "GRANT ALL ON daemon.* to daemon@'%' IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@'%' IDENTIFIED BY '${Panel}';"
+echo "MySQL Root Password: ${MySQLRoot}"
 echo "Daemon Password: ${Daemon}"
 echo "Panel Password: ${Panel}"
 
@@ -169,9 +169,9 @@ mysql -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
-mysql -e "UPDATE setting SET value="1" WHERE key="defaultServerIp";"
+mysql -p${Daemon} -u daemon daemon -e "UPDATE setting SET value="1" WHERE key="defaultServerIp";"
 echo "Set: Use Daemon IP ..."
-mysql -e "UPDATE setting SET value="auto" WHERE key="minecraftEula";"
+mysql -p${Daemon} -u daemon daemon -e "UPDATE setting SET value="auto" WHERE key="minecraftEula";"
 echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
