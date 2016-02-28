@@ -1,8 +1,21 @@
+# Update Resolve Servers
+rm -fv /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
+cat /etc/resolv.conf
+
 # Update and Install lsb-release
 aptitude -y update
 yum -y update
-aptitude -y install lsb-release
+aptitude -y install lsb-release sudo
 yum -y install redhat-lsb
+
+#Password Generator with variables.
+export MySQLRoot=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 
 # might need to add check to verify they're installed. If not fail response.
 
@@ -21,13 +34,23 @@ if [ "${OS}" = "Ubuntu" ] ; then
   echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
   echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
   apt-get -y update
-  DEBIAN_FRONTEND=noninteractive apt-get -y install percona-server-server-5.6 apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip
+  export DEBIAN_FRONTEND="noninteractive"
+  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip percona-server-server-5.6
+  mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+  service mysql start
+  service apache2 stop
+  service apache2 start
 elif [ "${OS}" = "Debian" ] ; then
   apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
-  wget https://repo.percona.com/apt/percona-release_0.1-3.$(lsb_release -sc)_all.deb
-  dpkg -i percona-release_0.1-3.$(lsb_release -sc)_all.deb
+  echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
+  echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
   apt-get -y update
-  DEBIAN_FRONTEND=noninteractive apt-get -y install percona-server-server-5.6 apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip
+  export DEBIAN_FRONTEND="noninteractive"
+  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite php5-mbstring wget nano zip unzip percona-server-server-5.6
+  mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+  service mysql start
+  service apache2 stop
+  service apache2 start
 elif [ "${OS}" = "CentOS" ] ; then
   rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
   rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
@@ -35,32 +58,20 @@ elif [ "${OS}" = "CentOS" ] ; then
   mv /var/lib/mysql /var/lib/mysql-old
   yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype
   /sbin/chkconfig --level 2345 httpd on;
+  /usr/bin/mysqladmin -u root password '${MySQLRoot}'
+  /sbin/service mysql start
+  /sbin/service httpd stop
+  /sbin/service httpd start
 fi
 
-#Password Generator with variables.
-export MySQLRoot=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-
-#MySQL Setup
-/sbin/service mysql start # Needed for CentOS
-service mysql start # Won't work for CentOS.
-# This doesn't work.
-# It's because of DEBIAN_FRONTEND=noninteractive in the apt-get install.
-# The password is empty or random and don't know it. We cannot set it on install.
-# Works on CentOS - Try to get it work on other distros.
-/usr/bin/mysqladmin -u root password '${MySQLRoot}'
-
-# Save Password: This will allow us do the 'mysql' command without a password. :)
+# Save Generated MySQL Root Password.
 cd /root/
 cat > .my.cnf << eof
 [client]
 user="root"
 pass="${MySQLRoot}"
 eof
-echo -e "[Configured] MySQL Root Password: ${MySQLRoot}"
-cat /root/.my.cnf
+echo "MySQL Root Password: ${MySQLRoot}"
 
 # Multicraft Databases
 mysql -e "CREATE DATABASE daemon;"
@@ -69,8 +80,8 @@ mysql -e "GRANT ALL ON daemon.* to daemon@localhost IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@localhost IDENTIFIED BY '${Panel}';"
 mysql -e "GRANT ALL ON daemon.* to daemon@'%' IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@'%' IDENTIFIED BY '${Panel}';"
-echo -e "[Created Daemon] Password: ${Daemon}"
-echo -e "[Created Panel] Password: ${Panel}"
+echo "Daemon Password: ${Daemon}"
+echo "Panel Password: ${Panel}"
 
 # Multicraft Download
 mkdir /home/root/
@@ -147,30 +158,33 @@ chown -R nobody:nobody /var/www/html/multicraft/
     # 'user_mysql_prefix' => '',
     # 'user_mysql_admin' => '',
 
-
-#Restart Services
-/sbin/service apache2 stop
-/sbin/service apache2 start
-/sbin/service httpd stop
-/sbin/service httpd start
-echo -e "[Restart] Services ..."
+# Automatically Import MySQL Database Schema's, thus removing the web installer. :)
+mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
+mysql -p${Panel} -u panel panel < /protected/data/panel/schema.mysql.sql
 
 # Configure New Admin Password
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
 mysql -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
-echo -e "[Upating] Admin Password ..."
+echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
 mysql -e "UPDATE setting SET value="1" WHERE key="defaultServerIp";"
-echo -e "[Upating] Use Daemon IP ..."
+echo "Set: Use Daemon IP ..."
 mysql -e "UPDATE setting SET value="auto" WHERE key="minecraftEula";"
-echo -e "[Upating] Auto Enable EULA ..."
+echo "Set: Auto Enable EULA ..."
 
-# Some other stuff.
-rm -fv /etc/resolv.conf
+# Enable Auto Start on Reboot
 echo "/home/root/multicraft/bin/multicraft start" >> /etc/rc.local
-echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
-cat /etc/resolv.conf
+
+# Output Vars
+echo "# Control Panel Link:"
+echo "${IP}/multicraft/index.php"
+echo "Username: admin"
+echo "Password: ${AdminPassword}"
+echo ""
+echo "# phpMyAdmin Link"
+echo "${IP}/phpMyAdmin/index.php"
+echo "Username: root"
+echo "Password: ${MySQLRoot}"
+echo ""
