@@ -169,9 +169,9 @@ mysql -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
-mysql -p${Daemon} -u daemon daemon -e "UPDATE setting SET value="1" WHERE key="defaultServerIp";"
+mysql -p${Daemon} -u daemon daemon -e "INSERT INTO setting VALUES('defaultServerIp', '1');"
 echo "Set: Use Daemon IP ..."
-mysql -p${Daemon} -u daemon daemon -e "UPDATE setting SET value="auto" WHERE key="minecraftEula";"
+mysql -p${Daemon} -u daemon daemon -e "INSERT INTO setting VALUES('minecraftEula', 'auto');"
 echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
