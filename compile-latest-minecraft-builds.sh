@@ -1,5 +1,7 @@
+# Compiler for CraftBukkit, Spigot and PaperSpigot
 Build="/home/Build"
 Web="/var/www/html"
+AWS="Downloads"
 mkdir ${Build}
 cd ${Build}
 wget https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar -O BuildTools.jar
@@ -17,24 +19,14 @@ yes | cp -rf ${Build}/spigot-1.8*.jar ${Web}/Spigot.jar
 yes | cp -rf ${Build}/craftbukkit-1*.jar ${Web}/release/CraftBukkit/
 yes | cp -rf ${Build}/craftbukkit-1.8*.jar ${Web}/CraftBukkit.jar
 
-# MCPro
-yes | cp -rf ${Build}/spigot-*.jar ${Web}/mcpro/Spigot/Spigot.jar
-yes | cp -rf ${Build}/spigot-1.8*.jar ${Web}/mcpro/Spigot/Spigot188.jar
-yes | cp -rf ${Build}/craftbukkit-1*.jar ${Web}/mcpro/CraftBukkit/CraftBukkit.jar
-yes | cp -rf ${Build}/craftbukkit-1.8*.jar ${Web}/mcpro/CraftBukkit/CraftBukkit188.jar
-
-# CraftBukkit
-yes | cp -rf ${Build}/craftbukkit-1*.jar ${Web}/release/CraftBukkit/
-yes | cp -rf ${Build}/craftbukkit-1.9*.jar ${Web}/CraftBukkit.jar
-
-# MCPro
-yes | cp -rf ${Build}/spigot-*.jar ${Web}/mcpro/Spigot/Spigot.jar
-yes | cp -rf ${Build}/spigot-1.9*.jar ${Web}/mcpro/Spigot/Spigot19.jar
-yes | cp -rf ${Build}/craftbukkit-1*.jar ${Web}/mcpro/CraftBukkit/CraftBukkit.jar
-yes | cp -rf ${Build}/craftbukkit-1.9*.jar ${Web}/mcpro/CraftBukkit/CraftBukkit19.jar
+# PaperSpigot
+PaperSpigot="paperspigot-1.8.8.jar"
+wget https://ci.destroystokyo.com/job/PaperSpigot/lastSuccessfulBuild/artifact/Paperclip.jar -O ${PaperSpigot}
+yes | cp -rf ${PaperSpigot} ${Web}/release/PaperSpigot/
+yes | cp -rf ${PaperSpigot} ${Web}/PaperSpigot.jar
 
 # Sync
-aws s3 sync /var/www/html/mcpro s3://MCProHosting-Misc/
+aws s3 sync /var/www/html/*.jar s3://${AWS}/
 
 # Cleanup
 rm -rf "${Build}"
