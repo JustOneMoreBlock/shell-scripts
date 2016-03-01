@@ -165,7 +165,7 @@ mysql -p${Panel} -u panel panel < /protected/data/panel/schema.mysql.sql
 # Configure New Admin Password
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
-mysql -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
+mysql -p${panel} -u panel panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
