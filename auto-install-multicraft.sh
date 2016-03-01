@@ -123,12 +123,13 @@ sed -i 's/\forbiddenFiles =\(.*\)/\E#forbiddenFiles =/g' ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
 # Multicraft Panel
+ProtectedConf="/protected/config/config.php"
 cd /var/www/html/multicraft/
 mv protected /
-mv /protected/config/config.php.dist /protected/config/config.php
+mv ${ProtectedConf}.dist ${ProtectedConf}
 chmod 777 assets
 chmod 777 /protected/runtime/
-chmod 777 /protected/config/config.php
+chmod 777 ${ProtectedConf}
 rm -fv api.php install.php
 sed -i 's/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g' index.php # Needs Testing
 
@@ -171,18 +172,18 @@ fi
     # 'user_mysql_admin' => '',
 
 # First Attempt and UNTESTED! I'll leave that commented above, just incase.
-sed -i "s/ '    panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E '    panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${MulticraftConf}
-sed -i "s/ '    panel_db_user' => 'root',/\E '    panel_db_user' => 'panel',/g" ${MulticraftConf}
-sed -i "s/ '    panel_db_pass' => '',/\E '    panel_db_pass' => '${Panel}',/g" ${MulticraftConf}
-sed -i "s/ '    daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E '    daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${MulticraftConf}
-sed -i "s/ '    daemon_db_user' => 'root',/\E '    daemon_db_user' => 'daemon',/g" ${MulticraftConf}
-sed -i "s/ '    daemon_db_pass' => 'testing',/\E '    daemon_db_pass' => '${Daemon}',/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql' => false,/\E'    user_mysql' => true,/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql_host' => '',/\E '    user_mysql_host' => 'localhost',/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql_user' => '',/\E '    user_mysql_user' => 'root',/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql_pass' => '',/\E '    user_mysql_pass' => '${MySQLRoot}',/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql_prefix' => '',/\E '    user_mysql_prefix' => 'db_',/g" ${MulticraftConf}
-sed -i "s/ '    user_mysql_admin' => '',/\E '    user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${MulticraftConf}
+sed -i "s/ '    panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E '    panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${ProtectedConf}
+sed -i "s/ '    panel_db_user' => 'root',/\E '    panel_db_user' => 'panel',/g" ${ProtectedConf}
+sed -i "s/ '    panel_db_pass' => '',/\E '    panel_db_pass' => '${Panel}',/g" ${ProtectedConf}
+sed -i "s/ '    daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E '    daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${ProtectedConf}
+sed -i "s/ '    daemon_db_user' => 'root',/\E '    daemon_db_user' => 'daemon',/g" ${ProtectedConf}
+sed -i "s/ '    daemon_db_pass' => 'testing',/\E '    daemon_db_pass' => '${Daemon}',/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql' => false,/\E'    user_mysql' => true,/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql_host' => '',/\E '    user_mysql_host' => 'localhost',/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql_user' => '',/\E '    user_mysql_user' => 'root',/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql_pass' => '',/\E '    user_mysql_pass' => '${MySQLRoot}',/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql_prefix' => '',/\E '    user_mysql_prefix' => 'db_',/g" ${ProtectedConf}
+sed -i "s/ '    user_mysql_admin' => '',/\E '    user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${ProtectedConf}
 
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
 mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
