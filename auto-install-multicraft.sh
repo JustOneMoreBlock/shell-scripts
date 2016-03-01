@@ -153,7 +153,6 @@ fi
 # Multicraft Panel Config
 # LOTS of sed magic here!
 # Too tired to do this.
-
     # 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',
     # 'panel_db_user' => 'root',
     # 'panel_db_pass' => '',
@@ -170,6 +169,20 @@ fi
     # 'user_mysql_pass' => '',
     # 'user_mysql_prefix' => '',
     # 'user_mysql_admin' => '',
+
+# First Attempt and UNTESTED! I'll leave that commented above, just incase.
+sed -i "s/ '    panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E '    panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${MulticraftConf}
+sed -i "s/ '    panel_db_user' => 'root',/\E '    panel_db_user' => 'panel',/g" ${MulticraftConf}
+sed -i "s/ '    panel_db_pass' => '',/\E '    panel_db_pass' => '${Panel}',/g" ${MulticraftConf}
+sed -i "s/ '    daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E '    daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${MulticraftConf}
+sed -i "s/ '    daemon_db_user' => 'root',/\E '    daemon_db_user' => 'daemon',/g" ${MulticraftConf}
+sed -i "s/ '    daemon_db_pass' => 'testing',/\E '    daemon_db_pass' => '${Daemon}',/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql' => false,/\E'    user_mysql' => true,/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql_host' => '',/\E '    user_mysql_host' => 'localhost',/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql_user' => '',/\E '    user_mysql_user' => 'root',/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql_pass' => '',/\E '    user_mysql_pass' => '${MySQLRoot}',/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql_prefix' => '',/\E '    user_mysql_prefix' => 'db_',/g" ${MulticraftConf}
+sed -i "s/ '    user_mysql_admin' => '',/\E '    user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${MulticraftConf}
 
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
 mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
