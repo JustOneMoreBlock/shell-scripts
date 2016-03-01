@@ -5,6 +5,9 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
 cat /etc/resolv.conf
 
+# Other Variables
+IP=$(/sbin/ifconfig eth1 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}') # Automatically gets the IP address and inputs it. :)
+
 # Update and Install lsb-release
 aptitude -y update
 yum -y update
@@ -102,23 +105,22 @@ cd /home/root/multicraft/
 
 # Multicraft Config
 # LOTS of sed magic here!
-
-# user = minecraft:minecraft
-# webUser = www-data:www-data
-# ip = 127.0.0.1
-# #id = 1
-# #database = sqlite:data.db
-# ## Example for MySQL connections:
-# #database = mysql:host=127.0.0.1;dbname=multicraft_daemon
-# #dbUser = youruser
-# #dbPassword = yourpassword
-# #dbCharset = utf8
-# #name =
-# #totalMemory =
-# baseDir = multicraft
-# forbiddenFiles = \.(jar|exe|bat|pif|sh)$
-# #multiuser = true
-
+# Add memory checker
+16GB="16384"
+32GB="32768"
+Memory="16"
+MulticraftConf="/home/root/multicraft/multicraft.conf"
+sed -i 's/user =\(.*\)/\Euser = root/g' ${MulticraftConf}
+sed -i 's/\#id =\(.*\)/\Eid = 1/g' ${MulticraftConf}
+sed -i 's/\#database = mysql/\Edatabase = mysql:host=127.0.0.1;dbname=daemon/g' ${MulticraftConf}
+sed -i 's/\#dbUser =\(.*\)/\EdbUser = daemon/g' ${MulticraftConf}
+sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
+sed -i 's/\#name =\(.*\)/\Ename = Server 1/g' ${MulticraftConf}
+sed -i "s/totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
+sed -i "s/\baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\/g" ${MulticraftConf}
+sed -i 's/\#multiuser =\(.*\)/\Emultiuser = true/g' ${MulticraftConf}
+sed -i 's/\forbiddenFiles =\(.*\)/\E#forbiddenFiles =/g' ${MulticraftConf}
+sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
 # Multicraft Panel
 cd /var/www/html/multicraft/
@@ -128,18 +130,29 @@ chmod 777 assets
 chmod 777 /protected/runtime/
 chmod 777 /protected/config/config.php
 rm -fv api.php install.php
-# sed index.php file
+sed -i 's/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g' index.php # Needs Testing
 
-# Permissions
-#Debian/Ubuntu
-chown -R www-data:www-data /protected/
-chown -R www-data:www-data /var/www/html/multicraft/
-#CentOS
-chown -R nobody:nobody /protected/
-chown -R nobody:nobody /var/www/html/multicraft/
+# phpMyAdmin
+# Let's add phpMyAdmin Support!
+
+# Permissions and Last Minute Settings
+if [ "${OS}" = "Ubuntu" ] ; then
+	sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
+	chown -R www-data:www-data /protected/
+	chown -R www-data:www-data /var/www/html/multicraft/
+elif [ "${OS}" = "Debian" ] ; then
+	sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
+	chown -R www-data:www-data /protected/
+	chown -R www-data:www-data /var/www/html/multicraft/
+elif [ "${OS}" = "CentOS" ] ; then
+	sed -i 's/webUser =\(.*\)/\EwebUser = nobody/g' ${MulticraftConf}
+	chown -R nobody:nobody /protected/
+	chown -R nobody:nobody /var/www/html/multicraft/
+fi
 
 # Multicraft Panel Config
 # LOTS of sed magic here!
+# Too tired to do this.
 
     # 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',
     # 'panel_db_user' => 'root',
@@ -165,6 +178,7 @@ mysql -p${Panel} -u panel panel < /protected/data/panel/schema.mysql.sql
 # Configure New Admin Password
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
+# Need to read to figure out a solution for this.
 mysql -p${panel} -u panel panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
