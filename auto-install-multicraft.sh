@@ -2,7 +2,10 @@
 rm -fv /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+# File Check
+if [ -f /etc/network/interfaces ]; then
 sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
+fi
 cat /etc/resolv.conf
 
 # Other Variables
@@ -25,6 +28,7 @@ export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/
 # Using cat/sed magic is a mess and doesn't always work.
 OS="$(lsb_release -si)"
 
+# Begin Ubuntu
 if [ "${OS}" = "Ubuntu" ] ; then
 apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
@@ -32,6 +36,7 @@ echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee 
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
+# Begin Debian
 elif [ "${OS}" = "Debian" ] ; then
 apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
@@ -39,6 +44,7 @@ echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee 
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
+# Begin CentOS
 elif [ "${OS}" = "CentOS" ] ; then
 rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
 rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
@@ -68,9 +74,11 @@ mysql -e "GRANT ALL ON daemon.* to daemon@localhost IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@localhost IDENTIFIED BY '${Panel}';"
 mysql -e "GRANT ALL ON daemon.* to daemon@'%' IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@'%' IDENTIFIED BY '${Panel}';"
+echo ""
 echo "MySQL Root Password: ${MySQLRoot}"
 echo "Daemon Password: ${Daemon}"
 echo "Panel Password: ${Panel}"
+echo ""
 
 # Multicraft Download
 mkdir /home/root/
@@ -127,20 +135,36 @@ sed -i "s/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g" index.php # Needs Tes
 
 # phpMyAdmin
 # Let's add phpMyAdmin Support!
+# Find a way to get latest version.
+cd /var/www/
+wget https://files.phpmyadmin.net/phpMyAdmin/4.5.5.1/phpMyAdmin-4.5.5.1-all-languages.zip -O phpMyAdmin.zip
+unzip -o phpMyadmin.zip
+rm -fv phpMyadmin.zip
+mv phpMyAdmin-* phpMyAdmin
+mv /var/www/html/phpMyAdmin/config.sample.inc.php /var/www/html/phpMyAdmin/config.inc.php
+# $cfg['blowfish_secret'] = ''; /* YOU MUST FILL IN THIS FOR COOKIE AUTH! */
+
+# Modify php.ini Settings
+sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
+sed -i 's/post_max_size = \(.*\)/\Epost_max_size = 100M/g' /etc/php.ini
+sed -i 's/max_execution_time = \(.*\)/\Emax_execution_time = 300/g' /etc/php.ini
+sed -i 's/max_input_time = \(.*\)/\Emax_input_time = 600/g' /etc/php.ini
+
+# We should add-in an auto install for Java 8. :)
 
 # Permissions and Last Minute Settings
 if [ "${OS}" = "Ubuntu" ] ; then
-	sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
-	chown -R www-data:www-data /protected/
-	chown -R www-data:www-data /var/www/html/multicraft/
+sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
+chown -R www-data:www-data /protected/
+chown -R www-data:www-data /var/www/html/multicraft/
 elif [ "${OS}" = "Debian" ] ; then
-	sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
-	chown -R www-data:www-data /protected/
-	chown -R www-data:www-data /var/www/html/multicraft/
+sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
+chown -R www-data:www-data /protected/
+chown -R www-data:www-data /var/www/html/multicraft/
 elif [ "${OS}" = "CentOS" ] ; then
-	sed -i 's/webUser =\(.*\)/\EwebUser = nobody/g' ${MulticraftConf}
-	chown -R nobody:nobody /protected/
-	chown -R nobody:nobody /var/www/html/multicraft/
+sed -i 's/webUser =\(.*\)/\EwebUser = /g' ${MulticraftConf}
+chown -R nobody:nobody /protected/
+chown -R nobody:nobody /var/www/html/multicraft/
 fi
 
 # Multicraft Panel Config
