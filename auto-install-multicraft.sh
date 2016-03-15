@@ -138,8 +138,8 @@ sed -i "s/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g" index.php # Needs Tes
 # Find a way to get latest version.
 cd /var/www/
 wget https://files.phpmyadmin.net/phpMyAdmin/4.5.5.1/phpMyAdmin-4.5.5.1-all-languages.zip -O phpMyAdmin.zip
-unzip -o phpMyadmin.zip
-rm -fv phpMyadmin.zip
+unzip -o phpMyAdmin.zip
+rm -fv phpMyAdmin.zip
 mv phpMyAdmin-* phpMyAdmin
 mv /var/www/html/phpMyAdmin/config.sample.inc.php /var/www/html/phpMyAdmin/config.inc.php
 # $cfg['blowfish_secret'] = ''; /* YOU MUST FILL IN THIS FOR COOKIE AUTH! */
