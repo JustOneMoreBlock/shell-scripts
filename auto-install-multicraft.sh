@@ -20,52 +20,38 @@ export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/nul
 export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 
-# might need to add check to verify they're installed. If not fail response.
-
-#
-#fail () {
-#  mail -s "Cory something broke. You fix it." some@email.com
-#}
-
 # The detection the Distrubution of Linux.
 # Eg. Ubuntu, Debian and CentOS.
 # Using cat/sed magic is a mess and doesn't always work.
 OS="$(lsb_release -si)"
 
 if [ "${OS}" = "Ubuntu" ] ; then
-  apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
-  echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-  echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
-  apt-get -y update
-  export DEBIAN_FRONTEND="noninteractive"
-  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
-  mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
-  service mysql start
-  service apache2 stop
-  service apache2 start
+apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
+echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
+apt-get -y update
+export DEBIAN_FRONTEND="noninteractive"
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
 elif [ "${OS}" = "Debian" ] ; then
-  apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
-  echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-  echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
-  apt-get -y update
-  export DEBIAN_FRONTEND="noninteractive"
-  apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
-  mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
-  service mysql start
-  service apache2 stop
-  service apache2 start
+apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
+echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
+apt-get -y update
+export DEBIAN_FRONTEND="noninteractive"
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
 elif [ "${OS}" = "CentOS" ] ; then
-  rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
-  rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
-  yum -y remove *mysql* php-*
-  mv /var/lib/mysql /var/lib/mysql-old
-  yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype
-  /sbin/chkconfig --level 2345 httpd on;
-  /usr/bin/mysqladmin -u root password '${MySQLRoot}'
-  /sbin/service mysql start
-  /sbin/service httpd stop
-  /sbin/service httpd start
+rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
+rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
+yum -y remove *mysql* php-*
+mv /var/lib/mysql /var/lib/mysql-old
+yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype
+/sbin/chkconfig --level 2345 httpd on;
 fi
+
+# Set MySQL Password
+/sbin/service mysql start
+service mysql start
+mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
 
 # Save Generated MySQL Root Password.
 cd /root/
@@ -106,20 +92,24 @@ cd /home/root/multicraft/
 # Multicraft Config
 # LOTS of sed magic here!
 # Add memory checker
-16GB="16384"
-32GB="32768"
+MB16="16384"
+MB32="32768"
 Memory="16"
+#test.sh: line 3: 16GB=16384: command not found
+#test.sh: line 4: 32GB=32768: command not found
+#test.sh: line 13: s/totalMemory =\(.*\)/\EtotalMemory = ${32GB}/g: bad substitution
+#sed: -e expression #1, char 58: unterminated `s' command
 MulticraftConf="/home/root/multicraft/multicraft.conf"
 sed -i 's/user =\(.*\)/\Euser = root/g' ${MulticraftConf}
 sed -i 's/\#id =\(.*\)/\Eid = 1/g' ${MulticraftConf}
-sed -i 's/\#database = mysql/\Edatabase = mysql:host=127.0.0.1;dbname=daemon/g' ${MulticraftConf}
+sed -i 's/\#database = mysql\(.*\)/\Edatabase = mysql:host=127.0.0.1;dbname=daemon/g' ${MulticraftConf}
 sed -i 's/\#dbUser =\(.*\)/\EdbUser = daemon/g' ${MulticraftConf}
-sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
+# sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
 sed -i 's/\#name =\(.*\)/\Ename = Server 1/g' ${MulticraftConf}
-sed -i "s/totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
-sed -i "s/\baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\/g" ${MulticraftConf}
+# sed -i "s/totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
+# sed -i "s/\baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\/g" ${MulticraftConf}
 sed -i 's/\#multiuser =\(.*\)/\Emultiuser = true/g' ${MulticraftConf}
-sed -i 's/\forbiddenFiles =\(.*\)/\E#forbiddenFiles =/g' ${MulticraftConf}
+# sed -i 's/\forbiddenFiles =\(.*\)/\E#forbiddenFiles =/g' ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
 # Multicraft Panel
@@ -131,7 +121,9 @@ chmod 777 assets
 chmod 777 /protected/runtime/
 chmod 777 ${ProtectedConf}
 rm -fv api.php install.php
-sed -i 's/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g' index.php # Needs Testing
+sed -i "s/dirname\(.*\)/\/\'\/protected\/yii\/yii.php';/g" index.php # Needs Testing
+# $yii = /'/protected/yii/yii.php';
+# $config = /'/protected/yii/yii.php';
 
 # phpMyAdmin
 # Let's add phpMyAdmin Support!
@@ -154,36 +146,36 @@ fi
 # Multicraft Panel Config
 # LOTS of sed magic here!
 # Too tired to do this.
-    # 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',
-    # 'panel_db_user' => 'root',
-    # 'panel_db_pass' => '',
+# 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',
+# 'panel_db_user' => 'root',
+# 'panel_db_pass' => '',
 
-    # 'daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',
-    # 'daemon_db_user' => 'root',
-    # 'daemon_db_pass' => 'testing',
+# 'daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',
+# 'daemon_db_user' => 'root',
+# 'daemon_db_pass' => 'testing',
 
-    #  // Allow Users to Create a MySQL Database
-    # 'user_mysql' => false,
-    # // User MySQL DB information
-    # 'user_mysql_host' => '',
-    # 'user_mysql_user' => '',
-    # 'user_mysql_pass' => '',
-    # 'user_mysql_prefix' => '',
-    # 'user_mysql_admin' => '',
+#// Allow Users to Create a MySQL Database
+# 'user_mysql' => false,
+# // User MySQL DB information
+# 'user_mysql_host' => '',
+# 'user_mysql_user' => '',
+# 'user_mysql_pass' => '',
+# 'user_mysql_prefix' => '',
+# 'user_mysql_admin' => '',
 
 # First Attempt and UNTESTED! I'll leave that commented above, just incase.
-sed -i "s/ '    panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E '    panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${ProtectedConf}
-sed -i "s/ '    panel_db_user' => 'root',/\E '    panel_db_user' => 'panel',/g" ${ProtectedConf}
-sed -i "s/ '    panel_db_pass' => '',/\E '    panel_db_pass' => '${Panel}',/g" ${ProtectedConf}
-sed -i "s/ '    daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E '    daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${ProtectedConf}
-sed -i "s/ '    daemon_db_user' => 'root',/\E '    daemon_db_user' => 'daemon',/g" ${ProtectedConf}
-sed -i "s/ '    daemon_db_pass' => 'testing',/\E '    daemon_db_pass' => '${Daemon}',/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql' => false,/\E'    user_mysql' => true,/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql_host' => '',/\E '    user_mysql_host' => 'localhost',/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql_user' => '',/\E '    user_mysql_user' => 'root',/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql_pass' => '',/\E '    user_mysql_pass' => '${MySQLRoot}',/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql_prefix' => '',/\E '    user_mysql_prefix' => 'db_',/g" ${ProtectedConf}
-sed -i "s/ '    user_mysql_admin' => '',/\E '    user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${ProtectedConf}
+sed -i "s/ 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E 'panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${ProtectedConf}
+sed -i "s/ 'panel_db_user' => 'root',/\E 'panel_db_user' => 'panel',/g" ${ProtectedConf}
+sed -i "s/ 'panel_db_pass' => '',/\E 'panel_db_pass' => '${Panel}',/g" ${ProtectedConf}
+sed -i "s/ 'daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E 'daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${ProtectedConf}
+sed -i "s/ 'daemon_db_user' => 'root',/\E 'daemon_db_user' => 'daemon',/g" ${ProtectedConf}
+sed -i "s/ 'daemon_db_pass' => 'testing',/\E 'daemon_db_pass' => '${Daemon}',/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql' => false,/\E'user_mysql' => true,/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql_host' => '',/\E 'user_mysql_host' => 'localhost',/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql_user' => '',/\E 'user_mysql_user' => 'root',/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql_pass' => '',/\E 'user_mysql_pass' => '${MySQLRoot}',/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql_prefix' => '',/\E 'user_mysql_prefix' => 'db_',/g" ${ProtectedConf}
+sed -i "s/ 'user_mysql_admin' => '',/\E 'user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${ProtectedConf}
 
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
 mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
@@ -204,6 +196,12 @@ echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
 echo "/home/root/multicraft/bin/multicraft start" >> /etc/rc.local
+
+# Restart Services
+service apache2 stop
+service apache2 start
+/sbin/service httpd stop
+/sbin/service httpd start
 
 # Output Vars
 echo "# Control Panel Link:"
