@@ -7,6 +7,7 @@ sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/netwo
 fi
 
 # Get Public IP
+# dig not found on debian
 IP="$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')"
 
 # Update
@@ -79,7 +80,7 @@ eof
 # Multicraft Download
 mkdir /home/root/
 cd /home/root/
-wget http://multicraft.org/download/linux64 -O multicraft.tar.gz
+wget --no-check-certificate http://multicraft.org/download/linux64 -O multicraft.tar.gz
 tar -xf multicraft.tar.gz
 cd multicraft
 rm -rf jar api setup.sh eula.txt readme.txt
@@ -88,7 +89,7 @@ mv multicraft.conf.dist multicraft.conf
 mv multicraft /var/www/html/
 mkdir jar
 cd jar
-wget "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
+wget --no-check-certificate "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
 unzip -o multicraft-jar-confs.zip
 rm -fv multicraft-jar-confs.zip
 cd /home/root/multicraft/
@@ -113,7 +114,7 @@ rm -fv api.php
 # Find a way to get latest version.
 phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.0/phpMyAdmin-4.6.0-all-languages.zip"
 cd /var/www/html/
-wget ${phpMyAdminFile} -O phpMyAdmin.zip
+wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
 unzip -o phpMyAdmin.zip
 rm -fv phpMyAdmin.zip
 mv phpMyAdmin-* phpMyAdmin
@@ -152,7 +153,10 @@ sed -i 's/\#multiuser =\(.*\)/\Emultiuser = true/g' ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
 # We should add-in an auto install for Java 8. :)
-# Ubuntu and Debian
+# Ubuntu
+# Apparently it doesn't work on Debian. :(
+# Same thing but different
+# http://tecadmin.net/install-java-8-on-debian/
 sudo apt-get -y install software-properties-common python-software-properties
 sudo add-apt-repository ppa:webupd8team/java -y
 sudo apt-get -y update
@@ -163,11 +167,16 @@ java -version
 # Need JRE
 
 # Permissions and Last Minute Settings
+# Debian has
+# www-data:x:33:33:www-data:/var/www/html:/bin/sh
 if [ "${OS}" = "Ubuntu" ] ; then
 sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
 chown -R www-data:www-data /protected/
 chown -R www-data:www-data /var/www/html/multicraft/
 elif [ "${OS}" = "Debian" ] ; then
+# Debian has
+# www-data:x:33:33:www-data:/var/www:/bin/sh
+# Could update apache file.
 sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
 chown -R www-data:www-data /protected/
 chown -R www-data:www-data /var/www/html/multicraft/
