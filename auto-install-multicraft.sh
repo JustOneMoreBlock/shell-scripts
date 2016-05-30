@@ -4,6 +4,7 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 # File Check
 if [ -f /etc/network/interfaces ]; then
 sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
+sudo /etc/init.d/resolvconf restart
 fi
 
 # Get Public IP
@@ -112,14 +113,14 @@ rm -fv api.php
 # phpMyAdmin
 # Let's add phpMyAdmin Support!
 # Find a way to get latest version.
-phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.0/phpMyAdmin-4.6.0-all-languages.zip"
+phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.1/phpMyAdmin-4.6.1-all-languages.zip"
 cd /var/www/html/
 wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
 unzip -o phpMyAdmin.zip
 rm -fv phpMyAdmin.zip
 mv phpMyAdmin-* phpMyAdmin
 mv /var/www/html/phpMyAdmin/config.sample.inc.php /var/www/html/phpMyAdmin/config.inc.php
-sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" config.inc.php
+sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" /var/www/html/phpMyAdmin/config.inc.php
 
 # Differnt ini file on Ubuntu?
 # /etc/php5/cli/php.ini
