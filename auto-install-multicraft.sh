@@ -113,7 +113,7 @@ rm -fv api.php
 # phpMyAdmin
 # Let's add phpMyAdmin Support!
 # Find a way to get latest version.
-phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.1/phpMyAdmin-4.6.1-all-languages.zip"
+phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.3/phpMyAdmin-4.6.3-all-languages.zip"
 cd /var/www/html/
 wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
 unzip -o phpMyAdmin.zip
@@ -231,7 +231,8 @@ mysql -p${Panel} -u panel panel < /protected/data/panel/schema.mysql.sql
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
 # Need to read to figure out a solution for this.
-mysql -p${panel} -u panel panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
+# ERROR 1054 (42S22) at line 1: Unknown column 'admin' in 'where clause'
+mysql -p${panel} -u panel -D panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
