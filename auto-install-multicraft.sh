@@ -8,8 +8,7 @@ sudo /etc/init.d/resolvconf restart
 fi
 
 # Get Public IP
-# dig not found on debian
-IP="$(dig TXT +short o-o.myaddr.l.google.com @ns1.google.com | awk -F'"' '{ print $2}')"
+IP="$(curl icanhazip.com)"
 
 # Update
 aptitude -y update
@@ -35,18 +34,17 @@ OS="$(lsb_release -si)"
 if [ "${OS}" = "Ubuntu" ] || [ "${OS}" = "Debian" ] ; then
 apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl
 # Begin CentOS
 elif [ "${OS}" = "CentOS" ] ; then
-rpm -Uvh https://mirror.webtatic.com/yum/el6/latest.rpm
-rpm -Uvh http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
+yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
+yum -y install http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
 yum -y remove *mysql* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype
+yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate
 /sbin/chkconfig --level 2345 httpd on;
 fi
 
@@ -122,9 +120,9 @@ mv phpMyAdmin-* phpMyAdmin
 mv /var/www/html/phpMyAdmin/config.sample.inc.php /var/www/html/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" /var/www/html/phpMyAdmin/config.inc.php
 
-# Differnt ini file on Ubuntu?
-# /etc/php5/cli/php.ini
+if [ -f /etc/php5/cli/php.ini ]; then
 ln -s /etc/php5/cli/php.ini /etc/php.ini
+fi
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
@@ -134,94 +132,118 @@ sed -i 's/max_input_time = \(.*\)/\Emax_input_time = 600/g' /etc/php.ini
 
 cat /root/mc.conf
 
-# Multicraft Config
-# LOTS of sed magic here!
-# Add memory checker
-kB="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
-Memory="${GetMemory} / 1024"
+# Memory Checker
+MemTotal="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
+Memory="$((${MemTotal} / 1024))"
 
+# Multicraft Config
 MulticraftConf="/home/root/multicraft/multicraft.conf"
 sed -i 's/user =\(.*\)/\Euser = root/g' ${MulticraftConf}
+sed -i 's/webUser =\(.*\)/\EwebUser = /g' ${MulticraftConf}
 sed -i 's/\#id =\(.*\)/\Eid = 1/g' ${MulticraftConf}
 sed -i 's/\#database = mysql\(.*\)/\Edatabase = mysql:host=127.0.0.1;dbname=daemon/g' ${MulticraftConf}
 sed -i 's/\#dbUser =\(.*\)/\EdbUser = daemon/g' ${MulticraftConf}
-# sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
+sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
 sed -i 's/\#name =\(.*\)/\Ename = Server 1/g' ${MulticraftConf}
-# sed -i "s/totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
-# sed -i "s/\baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\/g" ${MulticraftConf}
+sed -i "s/#totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
+sed -i "s/\(.*\)baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\//g" ${MulticraftConf}
 sed -i 's/\#multiuser =\(.*\)/\Emultiuser = true/g' ${MulticraftConf}
-# sed -i 's/\forbiddenFiles =\(.*\)/\E#forbiddenFiles =/g' ${MulticraftConf}
+sed -i "s/\(.*\)forbiddenFiles\(.*\)/\#forbiddenFiles = /g" ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
-# We should add-in an auto install for Java 8. :)
-# Ubuntu
-# Apparently it doesn't work on Debian. :(
-# Same thing but different
+# Java Installer
 # http://tecadmin.net/install-java-8-on-debian/
+if [ "${OS}" = "Ubuntu" ] ; then
 sudo apt-get -y install software-properties-common python-software-properties
 sudo add-apt-repository ppa:webupd8team/java -y
 sudo apt-get -y update
-# This has a EULA to accept. Need to automatically say, Yes.
+# Meh, EULA
 sudo apt-get -y install oracle-java8-installer
-java -version
-# CentOS
-# Need JRE
-
-# Permissions and Last Minute Settings
-# Debian has
-# www-data:x:33:33:www-data:/var/www/html:/bin/sh
-if [ "${OS}" = "Ubuntu" ] ; then
-sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
-chown -R www-data:www-data /protected/
-chown -R www-data:www-data /var/www/html/multicraft/
 elif [ "${OS}" = "Debian" ] ; then
-# Debian has
-# www-data:x:33:33:www-data:/var/www:/bin/sh
-# Could update apache file.
-sed -i 's/webUser =\(.*\)/\EwebUser = www-data:www-data/g' ${MulticraftConf}
-chown -R www-data:www-data /protected/
-chown -R www-data:www-data /var/www/html/multicraft/
+echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
+sudo apt-get -y update
+# Meh, EULA
+sudo apt-get -y install oracle-java8-installer
 elif [ "${OS}" = "CentOS" ] ; then
-sed -i 's/webUser =\(.*\)/\EwebUser = /g' ${MulticraftConf}
-chown -R nobody:nobody /protected/
-chown -R nobody:nobody /var/www/html/multicraft/
+yum -y install https://s3.amazonaws.com/MCProHosting-Misc/SSH/java/jre-8u101-linux-x64.rpm
 fi
 
-# Debian has a different webRoot?
-
 # Multicraft Panel Config
-# LOTS of sed magic here!
-# Too tired to do this.
-# 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',
-# 'panel_db_user' => 'root',
-# 'panel_db_pass' => '',
-
-# 'daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',
-# 'daemon_db_user' => 'root',
-# 'daemon_db_pass' => 'testing',
-
-#// Allow Users to Create a MySQL Database
-# 'user_mysql' => false,
-# // User MySQL DB information
-# 'user_mysql_host' => '',
-# 'user_mysql_user' => '',
-# 'user_mysql_pass' => '',
-# 'user_mysql_prefix' => '',
-# 'user_mysql_admin' => '',
-
-# First Attempt and UNTESTED! I'll leave that commented above, just incase.
-sed -i "s/ 'panel_db' => 'mysql:host=localhost;dbname=multicraft_panel',/\E 'panel_db' => 'mysql:host=localhost;dbname=panel',/g" ${ProtectedConf}
-sed -i "s/ 'panel_db_user' => 'root',/\E 'panel_db_user' => 'panel',/g" ${ProtectedConf}
-sed -i "s/ 'panel_db_pass' => '',/\E 'panel_db_pass' => '${Panel}',/g" ${ProtectedConf}
-sed -i "s/ 'daemon_db' => 'mysql:host=localhost;dbname=multicraft_daemon',/\E 'daemon_db' => 'mysql:host=localhost;dbname=daemon',/g" ${ProtectedConf}
-sed -i "s/ 'daemon_db_user' => 'root',/\E 'daemon_db_user' => 'daemon',/g" ${ProtectedConf}
-sed -i "s/ 'daemon_db_pass' => 'testing',/\E 'daemon_db_pass' => '${Daemon}',/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql' => false,/\E'user_mysql' => true,/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql_host' => '',/\E 'user_mysql_host' => 'localhost',/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql_user' => '',/\E 'user_mysql_user' => 'root',/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql_pass' => '',/\E 'user_mysql_pass' => '${MySQLRoot}',/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql_prefix' => '',/\E 'user_mysql_prefix' => 'db_',/g" ${ProtectedConf}
-sed -i "s/ 'user_mysql_admin' => '',/\E 'user_mysql_admin' => '${IP}/phpMyAdmin/index.php',/g" ${ProtectedConf}
+# Screw sed on this one. :)
+cd /protected/config/
+cat > config.php << eof
+<?php
+return array (
+  'panel_db' => 'mysql:host=localhost;dbname=panel',
+  'daemon_db' => 'mysql:host=localhost;dbname=daemon',
+  'daemon_password' => 'none',
+  'superuser' => 'admin',
+  'api_enabled' => false,
+  'api_allow_get' => false,
+  'user_api_keys' => false,
+  'admin_name' => 'Multicraft Administrator',
+  'admin_email' => '',
+  'show_serverlist' => 'user',
+  'hide_userlist' => true,
+  'ftp_client_disabled' => false,
+  'ftp_client_passive' => false,
+  'templates_disabled' => false,
+  'ajax_updates_disabled' => false,
+  'ajax_update_interval' => '2000',
+  'timeout' => '5',
+  'mark_daemon_offline' => '10',
+  'theme' => '',
+  'mobile_theme' => '',
+  'user_theme' => false,
+  'language' => '',
+  'login_tries' => '4',
+  'login_interval' => '300',
+  'ajax_serverlist' => false,
+  'status_banner' => true,
+  'mail_welcome' => false,
+  'mail_assign' => false,
+  'sqlitecache_schema' => false,
+  'sqlitecache_commands' => false,
+  'user_mysql' => true,
+  'user_mysql_host' => 'localhost',
+  'user_mysql_user' => 'root',
+  'user_mysql_pass' => '${MySQLRoot}',
+  'user_mysql_prefix' => 'db_',
+  'user_mysql_admin' => 'http://${IP}/phpMyAdmin/index.php',
+  'show_repairtool' => 'none',
+  'register_disabled' => true,
+  'reset_token_hours' => '0',
+  'default_ignore_ip' => false,
+  'default_display_ip' => '',
+  'show_memory' => true,
+  'log_bottomup' => true,
+  'admin_ips' => '',
+  'api_ips' => '',
+  'enable_csrf_validation' => true,
+  'enable_cookie_validation' => true,
+  'use_bukget' => false,
+  'auto_jar_submit' => 'yes',
+  'pw_crypt' => 'sha512_crypt',
+  'ip_auth' => true,
+  'cpu_display' => 'core',
+  'ram_display' => '',
+  'enable_disk_quota' => false,
+  'block_chat_characters' => true,
+  'log_console_commands' => false,
+  'show_delete_all_players' => 'superuser',
+  'kill_button' => 'none',
+  'fill_port_gaps' => true,
+  'support_legacy_daemons' => false,
+  'panel_db_user' => 'panel',
+  'panel_db_pass' => '${Panel}',
+  'daemon_db_user' => 'daemon',
+  'daemon_db_pass' => '${Daemon}',
+  'min_pw_length' => '',
+  'default_displayed_ip' => '',
+  'support_legacy_api' => false,
+);
+eof
 
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
 mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
@@ -236,9 +258,9 @@ mysql -p${panel} -u panel -D panel -e "UPDATE user SET password="${SaltPassword}
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
-mysql -p${Daemon} -u daemon daemon -e "INSERT INTO setting VALUES('defaultServerIp', '1');"
+mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES('defaultServerIp', '1');"
 echo "Set: Use Daemon IP ..."
-mysql -p${Daemon} -u daemon daemon -e "INSERT INTO setting VALUES('minecraftEula', 'auto');"
+mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES('minecraftEula', 'auto');"
 echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
