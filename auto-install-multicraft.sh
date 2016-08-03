@@ -1,3 +1,27 @@
+# The MIT License (MIT)
+
+# Copyright (c) 2016 Cory Gillenkirk
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# Supported Versions: Ubuntu, Debian and CentOS 6.x
+
 # Update Resolve Servers
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
@@ -96,8 +120,6 @@ unzip -o multicraft-jar-confs.zip
 rm -fv multicraft-jar-confs.zip
 cd /home/root/multicraft/
 
-# TEST PASSED: Ubuntu
-
 # Multicraft Panel
 ProtectedConf="/protected/config/config.php"
 cd ${WebRoot}/multicraft/
@@ -153,24 +175,6 @@ sed -i "s/\(.*\)baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\//g" ${Mult
 sed -i 's/\#multiuser =\(.*\)/\Emultiuser = true/g' ${MulticraftConf}
 sed -i "s/\(.*\)forbiddenFiles\(.*\)/\#forbiddenFiles = /g" ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
-
-# Java Installer
-# http://tecadmin.net/install-java-8-on-debian/
-if [ "${OS}" = "Ubuntu" ] ; then
-sudo apt-get -y install software-properties-common python-software-properties
-sudo add-apt-repository ppa:webupd8team/java -y
-sudo apt-get -y update
-# Meh, EULA
-sudo apt-get -y install oracle-java8-installer
-elif [ "${OS}" = "Debian" ] ; then
-echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
-sudo apt-get -y update
-# Meh, EULA
-sudo apt-get -y install oracle-java8-installer
-elif [ "${OS}" = "CentOS" ] ; then
-yum -y install https://s3.amazonaws.com/MCProHosting-Misc/SSH/java/jre-8u101-linux-x64.rpm
-fi
 
 # Multicraft Panel Config
 # Screw sed on this one. :)
@@ -248,6 +252,28 @@ return array (
 );
 eof
 
+# TESTED: Everything above should work on all distros.
+
+# Java Installer
+# http://tecadmin.net/install-java-8-on-debian/
+# This works. However, you need to accept the EULA on Debian and Ubuntu. CentOS just does a yum install. :)
+if [ "${OS}" = "Ubuntu" ] ; then
+sudo apt-get -y install software-properties-common python-software-properties
+sudo add-apt-repository ppa:webupd8team/java -y
+sudo apt-get -y update
+# Meh, EULA
+sudo apt-get -y install oracle-java8-installer
+elif [ "${OS}" = "Debian" ] ; then
+echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
+sudo apt-get -y update
+# Meh, EULA
+sudo apt-get -y install oracle-java8-installer
+elif [ "${OS}" = "CentOS" ] ; then
+yum -y install https://s3.amazonaws.com/MCProHosting-Misc/SSH/java/jre-8u101-linux-x64.rpm
+fi
+
+# UNTESTED
 DaemonQuery="$(mysql -p${Daemon} -u daemon -D daemon)"
 PanelQuery="$(mysql -p${Panel} -u panel -D panel)"
 
