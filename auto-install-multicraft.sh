@@ -248,22 +248,25 @@ return array (
 );
 eof
 
+DaemonQuery="$(mysql -p${Daemon} -u daemon -D daemon)"
+PanelQuery="$(mysql -p${Panel} -u panel -D panel)"
+
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
-mysql -p${Daemon} -u daemon daemon < /protected/data/daemon/schema.mysql.sql
-mysql -p${Panel} -u panel panel < /protected/data/panel/schema.mysql.sql
+${DaemonQuery} < /protected/data/daemon/schema.mysql.sql
+${PanelQuery} < /protected/data/panel/schema.mysql.sql
 
 # Configure New Admin Password
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
 # Need to read to figure out a solution for this.
 # ERROR 1054 (42S22) at line 1: Unknown column 'admin' in 'where clause'
-mysql -p${panel} -u panel -D panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
+${PanelQuery} -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
 
 # Daemon MySQL Changes
-mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting (key, value) VALUES ('defaultServerIp', '1');"
+${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('defaultServerIp', '1');"
 echo "Set: Use Daemon IP ..."
-mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting (key, value) VALUES ('minecraftEula', 'auto');"
+${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('minecraftEula', 'auto');"
 echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
