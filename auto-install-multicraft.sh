@@ -77,6 +77,8 @@ Daemon="${Daemon}"
 Panel="${Panel}"
 eof
 
+WebRoot="/var/www/html"
+
 # Multicraft Download
 mkdir /home/root/
 cd /home/root/
@@ -86,7 +88,7 @@ cd multicraft
 rm -rf jar api setup.sh eula.txt readme.txt
 mv panel multicraft
 mv multicraft.conf.dist multicraft.conf
-mv multicraft /var/www/html/
+mv multicraft ${WebRoot}/
 mkdir jar
 cd jar
 wget --no-check-certificate "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
@@ -98,7 +100,7 @@ cd /home/root/multicraft/
 
 # Multicraft Panel
 ProtectedConf="/protected/config/config.php"
-cd /var/www/html/multicraft/
+cd ${WebRoot}/multicraft/
 mv protected /
 mv ${ProtectedConf}.dist ${ProtectedConf}
 chmod 777 assets
@@ -113,13 +115,13 @@ rm -fv api.php
 # Let's add phpMyAdmin Support!
 # Find a way to get latest version.
 phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.3/phpMyAdmin-4.6.3-all-languages.zip"
-cd /var/www/html/
+cd ${WebRoot}/
 wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
 unzip -o phpMyAdmin.zip
 rm -fv phpMyAdmin.zip
 mv phpMyAdmin-* phpMyAdmin
-mv /var/www/html/phpMyAdmin/config.sample.inc.php /var/www/html/phpMyAdmin/config.inc.php
-sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" /var/www/html/phpMyAdmin/config.inc.php
+mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
+sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
 
 if [ -f /etc/php5/cli/php.ini ]; then
 ln -s /etc/php5/cli/php.ini /etc/php.ini
