@@ -1,3 +1,4 @@
+#!/bin/bash
 # The MIT License (MIT)
 
 # Copyright (c) 2016 Cory Gillenkirk
@@ -31,16 +32,16 @@ sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/netwo
 sudo /etc/init.d/resolvconf restart
 fi
 
-# Get Public IP
-IP="$(curl icanhazip.com)"
-
 # Update
 aptitude -y update
 yum -y update
 
 # Install: lsb-release
-aptitude -y install lsb-release sudo
-yum -y install redhat-lsb
+aptitude -y install lsb-release sudo curl
+yum -y install redhat-lsb curl
+
+# Get Public IP
+IP="$(curl -4 icanhazip.com)"
 
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
@@ -108,6 +109,7 @@ mkdir /home/root/
 cd /home/root/
 wget --no-check-certificate http://multicraft.org/download/linux64 -O multicraft.tar.gz
 tar -xf multicraft.tar.gz
+rm -fv multicraft.tar.gz
 cd multicraft
 rm -rf jar api setup.sh eula.txt readme.txt
 mv panel multicraft
@@ -118,6 +120,9 @@ cd jar
 wget --no-check-certificate "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
 unzip -o multicraft-jar-confs.zip
 rm -fv multicraft-jar-confs.zip
+wget http://s3.amazonaws.com/MCProHosting-Misc/Spigot/Spigot.jar -O Spigot.jar
+wget http://s3.amazonaws.com/MCProHosting-Misc/PaperSpigot/PaperSpigot.jar -O PaperSpigot.jar
+wget http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar -O Bungeecord.jar
 cd /home/root/multicraft/
 
 # Multicraft Panel
@@ -136,7 +141,7 @@ rm -fv api.php
 # phpMyAdmin
 # Let's add phpMyAdmin Support!
 # Find a way to get latest version.
-phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.3/phpMyAdmin-4.6.3-all-languages.zip"
+phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.4/phpMyAdmin-4.6.4-all-languages.zip"
 cd ${WebRoot}/
 wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
 unzip -o phpMyAdmin.zip
@@ -145,9 +150,10 @@ mv phpMyAdmin-* phpMyAdmin
 mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
 
-if [ -f /etc/php5/cli/php.ini ]; then
-ln -s /etc/php5/cli/php.ini /etc/php.ini
-fi
+# php.ini Auto-Detector
+PHP="$(php -r "echo php_ini_loaded_file();")"
+rm -fv /etc/php.ini
+ln -s ${PHP} /etc/php.ini
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
@@ -296,7 +302,7 @@ ${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('minecraftEula', 'au
 echo "Set: Auto Enable EULA ..."
 
 # Enable Auto Start on Reboot
-echo "/home/root/multicraft/bin/multicraft start" >> /etc/rc.local
+echo "/home/root/multicraft/bin/multicraft start" > /etc/rc.local
 
 # Restart Services
 service apache2 stop
@@ -307,14 +313,17 @@ service apache2 start
 # Check System
 
 # Output Vars
-echo ""
-echo "# Control Panel Link:"
-echo "http://${IP}/multicraft/index.php"
-echo "Username: admin"
-echo "Password: ${AdminPassword}"
-echo ""
-echo "# phpMyAdmin Link"
-echo "http://${IP}/phpMyAdmin/index.php"
-echo "Username: root"
-echo "Password: ${MySQLRoot}"
-echo ""
+cd /root/
+cat > login.conf << eof
+# Control Panel Link:
+http://${IP}/multicraft/index.php
+Username: admin
+Password: ${AdminPassword}
+
+# phpMyAdmin Link
+http://${IP}/phpMyAdmin/index.php
+Username: root
+Password: ${MySQLRoot}
+eof
+
+cat /root/login.conf
