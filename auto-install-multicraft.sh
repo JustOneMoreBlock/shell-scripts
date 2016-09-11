@@ -62,7 +62,7 @@ echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git
 # Begin CentOS
 elif [ "${OS}" = "CentOS" ] ; then
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
@@ -70,7 +70,7 @@ yum -y install http://www.percona.com/downloads/percona-release/percona-release-
 yum -y remove *mysql* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate
+yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
 /sbin/chkconfig --level 2345 httpd on;
 fi
 
@@ -138,15 +138,9 @@ sed -i 's/dirname(__FILE__)./\E/g' install.php
 rm -fv api.php
 # rm -fv api.php install.php
 
-# phpMyAdmin
-# Let's add phpMyAdmin Support!
-# Find a way to get latest version.
-phpMyAdminFile="https://files.phpmyadmin.net/phpMyAdmin/4.6.4/phpMyAdmin-4.6.4-all-languages.zip"
+# Automated phpMyAdmin Installer
 cd ${WebRoot}/
-wget --no-check-certificate ${phpMyAdminFile} -O phpMyAdmin.zip
-unzip -o phpMyAdmin.zip
-rm -fv phpMyAdmin.zip
-mv phpMyAdmin-* phpMyAdmin
+git clone --depth=1 --branch=STABLE git://github.com/phpmyadmin/phpmyadmin.git phpMyAdmin
 mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
 
@@ -258,26 +252,36 @@ return array (
 );
 eof
 
-# TESTED: Everything above should work on all distros.
-
-# Java Installer
-# http://tecadmin.net/install-java-8-on-debian/
-# This works. However, you need to accept the EULA on Debian and Ubuntu. CentOS just does a yum install. :)
+# Auto Java Installer
 if [ "${OS}" = "Ubuntu" ] ; then
-sudo apt-get -y install software-properties-common python-software-properties
+sudo apt-get -y install software-properties-common python-software-properties debconf-utils
+sudo apt-get -y update
 sudo add-apt-repository ppa:webupd8team/java -y
 sudo apt-get -y update
-# Meh, EULA
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
 sudo apt-get -y install oracle-java8-installer
 elif [ "${OS}" = "Debian" ] ; then
 echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
 sudo apt-get -y update
-# Meh, EULA
+sudo apt-get -y install debconf-utils
+sudo apt-get -y update
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
 sudo apt-get -y install oracle-java8-installer
 elif [ "${OS}" = "CentOS" ] ; then
-yum -y install https://s3.amazonaws.com/MCProHosting-Misc/SSH/java/jre-8u101-linux-x64.rpm
+# Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
+# Why copy and paste snipplets? It's a good script and I'll just store in my repo. :)
+wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
+chmod +x install_java.sh
+sh install_java.sh jre8 rpm
+rm -fv install_java.sh
 fi
+
+java --version
+
+# TESTED: Everything above should work on all supported distros.
 
 # UNTESTED
 DaemonQuery="$(mysql -p${Daemon} -u daemon -D daemon)"
