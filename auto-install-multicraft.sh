@@ -29,7 +29,6 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 # File Check
 if [ -f /etc/network/interfaces ]; then
 sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
-sudo /etc/init.d/resolvconf restart
 fi
 
 # Update
@@ -53,10 +52,12 @@ export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/n
 
 # Detecting Distrubution of Linux
 # Ubuntu, Debian and CentOS
-OS="$(lsb_release -si)"
+DISTRO="$(lsb_release -si)"
+VERSION="$(lsb_release -sr | cut -d. -f1)"
+OS="$DISTRO$VERSION"
 
 # Begin Ubuntu
-if [ "${OS}" = "Ubuntu" ] || [ "${OS}" = "Debian" ] ; then
+if [ "${DISTRO}" = "Ubuntu" ] || [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
@@ -64,13 +65,21 @@ apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git
 # Begin CentOS
-elif [ "${OS}" = "CentOS" ] ; then
+elif [ "${OS}" = "CentOS6" ] ; then
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 yum -y install http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
 yum -y remove *mysql* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
+/sbin/chkconfig --level 2345 httpd on;
+elif [ "${OS}" = "CentOS7" ] ; then
+#yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
+yum -y install http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
+yum -y remove *mysql* php-*
+mv /var/lib/mysql /var/lib/mysql-old
+yum -y update
+#yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
 /sbin/chkconfig --level 2345 httpd on;
 fi
 
@@ -253,7 +262,7 @@ return array (
 eof
 
 # Auto Java Installer
-if [ "${OS}" = "Ubuntu" ] ; then
+if [ "${DISTRO}" = "Ubuntu" ] ; then
 sudo apt-get -y install software-properties-common python-software-properties debconf-utils
 sudo apt-get -y update
 sudo add-apt-repository ppa:webupd8team/java -y
@@ -261,7 +270,7 @@ sudo apt-get -y update
 sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
 sudo apt-get -y install oracle-java8-installer
-elif [ "${OS}" = "Debian" ] ; then
+elif [ "${DISTRO}" = "Debian" ] ; then
 echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
 sudo apt-get -y update
@@ -270,7 +279,7 @@ sudo apt-get -y update
 sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
 sudo apt-get -y install oracle-java8-installer
-elif [ "${OS}" = "CentOS" ] ; then
+elif [ "${DISTRO}" = "CentOS" ] ; then
 # Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
 # Why copy and paste snipplets? It's a good script and I'll just store in my repo. :)
 wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
@@ -279,7 +288,7 @@ sh install_java.sh jre8 rpm
 rm -fv install_java.sh
 fi
 
-java --version
+java -version
 
 # TESTED: Everything above should work on all supported distros.
 
