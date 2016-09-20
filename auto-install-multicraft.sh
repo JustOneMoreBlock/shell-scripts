@@ -65,21 +65,13 @@ apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git
 # Begin CentOS
-elif [ "${OS}" = "CentOS6" ] ; then
+elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
-yum -y install http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
+yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
 yum -y remove *mysql* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
-/sbin/chkconfig --level 2345 httpd on;
-elif [ "${OS}" = "CentOS7" ] ; then
-#yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
-yum -y install http://www.percona.com/downloads/percona-release/percona-release-0.0-1.x86_64.rpm
-yum -y remove *mysql* php-*
-mv /var/lib/mysql /var/lib/mysql-old
-yum -y update
-#yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
 /sbin/chkconfig --level 2345 httpd on;
 fi
 
@@ -103,13 +95,6 @@ mysql -e "GRANT ALL ON daemon.* to daemon@localhost IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@localhost IDENTIFIED BY '${Panel}';"
 mysql -e "GRANT ALL ON daemon.* to daemon@'%' IDENTIFIED BY '${Daemon}';"
 mysql -e "GRANT ALL ON panel.* to panel@'%' IDENTIFIED BY '${Panel}';"
-
-cd /root/
-cat > mc.conf << eof
-MySQLRoot="${MySQLRoot}"
-Daemon="${Daemon}"
-Panel="${Panel}"
-eof
 
 WebRoot="/var/www/html"
 
@@ -186,7 +171,6 @@ sed -i "s/\(.*\)forbiddenFiles\(.*\)/\#forbiddenFiles = /g" ${MulticraftConf}
 sed -i "s/\ip = 127.0.0.1/\Eip = ${IP}/g" ${MulticraftConf}
 
 # Multicraft Panel Config
-# Screw sed on this one. :)
 cd /protected/config/
 cat > config.php << eof
 <?php
@@ -281,7 +265,6 @@ sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true"
 sudo apt-get -y install oracle-java8-installer
 elif [ "${DISTRO}" = "CentOS" ] ; then
 # Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
-# Why copy and paste snipplets? It's a good script and I'll just store in my repo. :)
 wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
 chmod +x install_java.sh
 sh install_java.sh jre8 rpm
@@ -290,9 +273,36 @@ fi
 
 java -version
 
+# Restart Services
+service apache2 stop
+service apache2 start
+/sbin/service httpd stop
+/sbin/service httpd start
+
+# Output Vars
+cd /root/
+cat > logins.conf << eof
+# Stored Passwords
+MySQL Root Password: ${MySQLRoot}
+Multicraft Daemon: ${Daemon}
+Multicraft Panel: ${Panel}
+
+# Control Panel Link:
+http://${IP}/multicraft/index.php
+Username: admin
+Password: ${AdminPassword}
+
+# phpMyAdmin Link
+http://${IP}/phpMyAdmin/index.php
+Username: root
+Password: ${MySQLRoot}
+eof
+
+cat /root/login.conf
+
 # TESTED: Everything above should work on all supported distros.
 
-# UNTESTED
+# UNTESTED BELOW
 DaemonQuery="$(mysql -p${Daemon} -u daemon -D daemon)"
 PanelQuery="$(mysql -p${Panel} -u panel -D panel)"
 
@@ -314,29 +324,4 @@ echo "Set: Use Daemon IP ..."
 ${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('minecraftEula', 'auto');"
 echo "Set: Auto Enable EULA ..."
 
-# Enable Auto Start on Reboot
-echo "/home/root/multicraft/bin/multicraft start" > /etc/rc.local
-
-# Restart Services
-service apache2 stop
-service apache2 start
-/sbin/service httpd stop
-/sbin/service httpd start
-
 # Check System
-
-# Output Vars
-cd /root/
-cat > login.conf << eof
-# Control Panel Link:
-http://${IP}/multicraft/index.php
-Username: admin
-Password: ${AdminPassword}
-
-# phpMyAdmin Link
-http://${IP}/phpMyAdmin/index.php
-Username: root
-Password: ${MySQLRoot}
-eof
-
-cat /root/login.conf
