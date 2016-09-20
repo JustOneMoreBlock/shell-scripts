@@ -66,7 +66,16 @@ export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
+# Begin CentOS6
+if [ "${OS}" = "CentOS6" ] ; then
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
+# Begin CentOS7
+elif [ "${OS}" = "CentOS7" ] ; then
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+fi
+# Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
 yum -y remove *mysql* php-*
 mv /var/lib/mysql /var/lib/mysql-old
@@ -129,8 +138,7 @@ chmod 777 /protected/runtime/
 chmod 777 ${ProtectedConf}
 sed -i 's/dirname(__FILE__)./\E/g' index.php
 sed -i 's/dirname(__FILE__)./\E/g' install.php
-rm -fv api.php
-# rm -fv api.php install.php
+rm -fv api.php install.php
 
 # Automated phpMyAdmin Installer
 cd ${WebRoot}/
@@ -148,8 +156,6 @@ sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.
 sed -i 's/post_max_size = \(.*\)/\Epost_max_size = 100M/g' /etc/php.ini
 sed -i 's/max_execution_time = \(.*\)/\Emax_execution_time = 300/g' /etc/php.ini
 sed -i 's/max_input_time = \(.*\)/\Emax_input_time = 600/g' /etc/php.ini
-
-cat /root/mc.conf
 
 # Memory Checker
 MemTotal="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
@@ -298,30 +304,26 @@ Username: root
 Password: ${MySQLRoot}
 eof
 
-cat /root/login.conf
-
-# TESTED: Everything above should work on all supported distros.
-
-# UNTESTED BELOW
-DaemonQuery="$(mysql -p${Daemon} -u daemon -D daemon)"
-PanelQuery="$(mysql -p${Panel} -u panel -D panel)"
+cat /root/logins.conf
 
 # Automatically Import MySQL Database Schema's, thus removing the web installer. :)
-${DaemonQuery} < /protected/data/daemon/schema.mysql.sql
-${PanelQuery} < /protected/data/panel/schema.mysql.sql
+mysql -p${Panel} -u panel -D panel < /protected/data/panel/schema.mysql.sql
+mysql -p${Daemon} -u daemon -D daemon < /protected/data/daemon/schema.mysql.sql
+
+# Daemon MySQL Changes
+mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('defaultServerIp', '1');"
+echo "Set: Use Daemon IP ..."
+mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraftEula', 'auto');"
+echo "Set: Auto Enable EULA ..."
+
+# TESTED: Everything above should work on all supported distros.
 
 # Configure New Admin Password
 # Using: ${AdminPassword} and set in password.
 # SaltPassword=$(`${AdminPassword}`)
 # Need to read to figure out a solution for this.
 # ERROR 1054 (42S22) at line 1: Unknown column 'admin' in 'where clause'
-${PanelQuery} -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
+mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
 echo "Updating: Admin Password ..."
-
-# Daemon MySQL Changes
-${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('defaultServerIp', '1');"
-echo "Set: Use Daemon IP ..."
-${DaemonQuery} -e "INSERT INTO setting (key, value) VALUES ('minecraftEula', 'auto');"
-echo "Set: Auto Enable EULA ..."
 
 # Check System
