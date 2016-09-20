@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Supported Versions: Ubuntu, Debian and CentOS 6.x
+# Supported Versions: Ubuntu, Debian and CentOS 6 and 7.
 
 # Update Resolve Servers
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
