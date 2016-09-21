@@ -57,7 +57,7 @@ VERSION="$(lsb_release -sr | cut -d. -f1)"
 OS="$DISTRO$VERSION"
 
 # Begin Ubuntu
-if [ "${DISTRO}" = "Ubuntu" ] || [ "${DISTRO}" = "Debian" ] ; then
+if [ "${DISTRO}" = "Ubuntu" ] ; then
 apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
@@ -70,8 +70,15 @@ add-apt-repository -y ppa:ondrej/php
 apt-get update
 apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-# apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git sudo
 apt-get -y install apache2 php5.6 php5.6-mysql sqlite php5.6-gd php5.6-mbstring php5.6-sqlite wget nano zip unzip percona-server-server-5.6 curl git sudo
+# Begin Debian
+elif [ "${DISTRO}" = "Debian" ] ; then
+apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
+echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
+apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+export DEBIAN_FRONTEND="noninteractive"
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git sudo
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 # Begin CentOS6
