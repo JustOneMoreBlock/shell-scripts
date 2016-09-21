@@ -5,7 +5,7 @@ MIT License
 
 Install:
 ```
-yum -y install wget; sudo apt-get install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
+yum -y install wget; sudo apt-get -y install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
 ```
 
 auto-install-multicraft.sh
