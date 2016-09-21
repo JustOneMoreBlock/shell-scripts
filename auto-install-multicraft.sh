@@ -312,18 +312,16 @@ mysql -p${Daemon} -u daemon -D daemon < /protected/data/daemon/schema.mysql.sql
 
 # Daemon MySQL Changes
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('defaultServerIp', '1');"
-echo "Set: Use Daemon IP ..."
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraftEula', 'auto');"
-echo "Set: Auto Enable EULA ..."
 
 # TESTED: Everything above should work on all supported distros.
 
 # Configure New Admin Password
-# Using: ${AdminPassword} and set in password.
-# SaltPassword=$(`${AdminPassword}`)
-# Need to read to figure out a solution for this.
-# ERROR 1054 (42S22) at line 1: Unknown column 'admin' in 'where clause'
-mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password="${SaltPassword}" WHERE name="admin";"
-echo "Updating: Admin Password ..."
+SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
 
-# Check System
+# It's not passing the ${AdminPassword} variable.
+# SaltPassword="$(python -c 'import crypt; print crypt.crypt("RandomPassword", "$6$random_salt")')"
+# The password would be RandomPassword
+
+mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
+mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
