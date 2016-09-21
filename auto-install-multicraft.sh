@@ -36,8 +36,8 @@ aptitude -y update
 yum -y update
 
 # Install: lsb-release
-aptitude -y install lsb-release sudo curl
-yum -y install redhat-lsb curl
+aptitude -y install lsb-release
+yum -y install redhat-lsb
 
 # Get Public IP
 IP="$(curl -4 icanhazip.com)"
@@ -63,7 +63,7 @@ echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git
+apt-get -y install apache2 php5 php5-mysql sqlite php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 curl git sudo
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 # Begin CentOS6
@@ -77,10 +77,10 @@ yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
-yum -y remove *mysql* php-*
+yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git
+yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git sudo
 /sbin/chkconfig --level 2345 httpd on;
 fi
 
@@ -317,11 +317,11 @@ mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraft
 # TESTED: Everything above should work on all supported distros.
 
 # Configure New Admin Password
-SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
+# SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
 
 # It's not passing the ${AdminPassword} variable.
 # SaltPassword="$(python -c 'import crypt; print crypt.crypt("RandomPassword", "$6$random_salt")')"
 # The password would be RandomPassword
 
-mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
-mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
+# mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
+# mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
