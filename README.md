@@ -3,6 +3,11 @@ These are shell scripits I've been writing to make things easier. :)
 
 MIT License
 
+Install:
+```
+yum -y install wget; sudo apt-get install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
+```
+
 auto-install-multicraft.sh
 - Use Google Resolve Servers
 - Password Generator
