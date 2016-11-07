@@ -97,6 +97,8 @@ mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git sudo
 /sbin/chkconfig --level 2345 httpd on;
+sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
+echo 0 >/selinux/enforce
 fi
 
 # Set MySQL Password
@@ -152,7 +154,6 @@ chmod 777 assets
 chmod 777 /protected/runtime/
 chmod 777 ${ProtectedConf}
 sed -i 's/dirname(__FILE__)./\E/g' index.php
-sed -i 's/dirname(__FILE__)./\E/g' install.php
 rm -fv api.php install.php
 
 # Automated phpMyAdmin Installer
@@ -328,6 +329,13 @@ mysql -p${Daemon} -u daemon -D daemon < /protected/data/daemon/schema.mysql.sql
 # Daemon MySQL Changes
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('defaultServerIp', '1');"
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraftEula', 'auto');"
+
+# Auto Start
+echo "/home/root/multicraft/bin/multicraft start" >> /etc/rc.local
+echo "/sbin/iptables -F" >> /etc/rc.local
+echo "/sbin/iptables -X" >> /etc/rc.local
+chmod +x /etc/rc.d/rc.local
+/etc/rc.local
 
 # TESTED: Everything above should work on all supported distros.
 
