@@ -85,10 +85,12 @@ elif [ "${DISTRO}" = "CentOS" ] ; then
 if [ "${OS}" = "CentOS6" ] ; then
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
+echo 0 >/selinux/enforce
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+echo 0 > /sys/fs/selinux/enforce
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
@@ -98,7 +100,6 @@ yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git sudo
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
-echo 0 >/selinux/enforce
 fi
 
 # Set MySQL Password
@@ -331,10 +332,13 @@ mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('defaultSe
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraftEula', 'auto');"
 
 # Auto Start
-echo "/home/root/multicraft/bin/multicraft start" >> /etc/rc.local
-echo "/sbin/iptables -F" >> /etc/rc.local
-echo "/sbin/iptables -X" >> /etc/rc.local
-chmod +x /etc/rc.d/rc.local
+mv /etc/rc.local /etc/rc.local-old
+cd /etc/
+cat > rc.local << eof
+/home/root/multicraft/bin/multicraft start
+/sbin/iptables -F
+/sbin/iptables -X
+eof
 /etc/rc.local
 
 # TESTED: Everything above should work on all supported distros.
