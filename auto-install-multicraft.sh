@@ -339,6 +339,7 @@ cat > rc.local << eof
 /sbin/iptables -F
 /sbin/iptables -X
 eof
+chmod +x /etc/rc.local
 /etc/rc.local
 
 # TESTED: Everything above should work on all supported distros.
