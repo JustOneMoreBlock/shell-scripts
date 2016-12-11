@@ -48,7 +48,7 @@ export MySQLRoot=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/
 export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=32 count=1 2>/dev/null`
 
 # Detecting Distrubution of Linux
 # Ubuntu, Debian and CentOS
