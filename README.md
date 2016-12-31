@@ -5,7 +5,7 @@ MIT License
 
 Auto Install Multicraft and Libs: (Supported Versions: Ubuntu, Debian and CentOS 6 and 7)
 ```
-yum -y install wget; sudo apt-get -y install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
+yum -y install wget; apt-get -y install wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
 ```
 
 Auto Install cron for Automatic Security Updates: (Supported Versions: Ubuntu, Debian and CentOS 6 and 7)
