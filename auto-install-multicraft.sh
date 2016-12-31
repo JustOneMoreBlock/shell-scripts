@@ -32,11 +32,11 @@ sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/netwo
 fi
 
 # Update
-apt-get -y update
+sudo apt-get -y update
 yum -y update
 
 # Install: lsb-release
-apt-get -y install lsb-release curl sudo
+sudo apt-get -y install lsb-release curl sudo
 yum -y install redhat-lsb curl
 
 # Get Public Interface
@@ -64,27 +64,36 @@ if [ "${DISTRO}" = "Ubuntu" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
-apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
-apt-get install -y language-pack-en-base
+sudo apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+sudo apt-get -y install software-properties-common python-software-properties debconf-utils language-pack-en-base
+sudo apt-get -y updates debconf-utils
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
-apt-get install -y software-properties-common
-add-apt-repository -y ppa:ondrej/php
-apt-get update
-apt-get -y upgrade
+add-apt-repository ppa:ondrej/php -y
+add-apt-repository ppa:webupd8team/java -y
+sudo apt-get -y update
+sudo apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysql sqlite php5.6-gd php5.6-mbstring php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
+sudo apt-get -y install apache2 php5.6 php5.6-mysql sqlite php5.6-gd php5.6-mbstring php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
+sudo apt-get -y install oracle-java8-installer
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
-# echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-# echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
+echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
 wget https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
 dpkg -i percona-release.deb
-apt-get update
-apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
+sudo apt-get -y update
+sudo apt-get -y install debconf-utils
+sudo apt-get -y update
+sudo apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+sudo apt-get -y install apache2 php5 php5-mysql php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
+sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
+sudo apt-get -y install oracle-java8-installer
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install net-tools
@@ -109,7 +118,13 @@ yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git sudo
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
+# Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
+wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
+chmod +x install_java.sh
+sh install_java.sh jre8 rpm
+rm -fv install_java.sh
 fi
+
 
 # Set MySQL Password
 /sbin/service mysql start
@@ -277,34 +292,6 @@ return array (
 );
 eof
 
-# Auto Java Installer
-if [ "${DISTRO}" = "Ubuntu" ] ; then
-sudo apt-get -y install software-properties-common python-software-properties debconf-utils
-sudo apt-get -y update
-sudo add-apt-repository ppa:webupd8team/java -y
-sudo apt-get -y update
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-sudo apt-get -y install oracle-java8-installer
-elif [ "${DISTRO}" = "Debian" ] ; then
-echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
-sudo apt-get -y update
-sudo apt-get -y install debconf-utils
-sudo apt-get -y update
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-sudo apt-get -y install oracle-java8-installer
-elif [ "${DISTRO}" = "CentOS" ] ; then
-# Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
-wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
-chmod +x install_java.sh
-sh install_java.sh jre8 rpm
-rm -fv install_java.sh
-fi
-
-java -version
-
 # Restart Services
 service apache2 stop
 service apache2 start
@@ -350,6 +337,8 @@ cat > rc.local << eof
 eof
 chmod +x /etc/rc.local
 /etc/rc.local
+
+java -version
 
 # TESTED: Everything above should work on all supported distros.
 
