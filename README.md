@@ -27,6 +27,25 @@ auto-install-multicraft.sh
 - Automated Java Installer
 - Automated phpMyAdmin Installer with password generated blowfish setup.
 
+# Forbidden Error on Multicraft download?
+Multicraft has enabled CloudFlare Protection, and you have to enter a reCaptcha.
+
+- Fix (Either Multicraft allows that through, or provide another hosted solution.)
+- Otherwise, we offer a hosted solution.
+
+In the meantime, you can edit Line131
+https://github.com/JustOneMoreBlock/shell-scripts/blob/master/auto-install-multicraft.sh#L131
+
+Change:
+```
+http://multicraft.org/download/linux64
+```
+
+To:
+```
+Your own downloaded link. (Dropbox or w/e)
+```
+
 # Few Additional Things
 - Automated php.ini detector (Used to create a symlink to /etc/php.ini)
 - Automated memory detector (Used to configure your multicraft.conf max memory.
