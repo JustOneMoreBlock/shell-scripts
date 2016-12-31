@@ -39,6 +39,9 @@ yum -y update
 apt-get -y install lsb-release curl sudo
 yum -y install redhat-lsb curl
 
+# Get Public Interface
+IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
+
 # Get Public IP
 IP="$(curl -4 icanhazip.com)"
 
@@ -84,6 +87,9 @@ export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php5 php5-mysql php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
+yum -y install net-tools
+sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
+sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
 if [ "${OS}" = "CentOS6" ] ; then
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
