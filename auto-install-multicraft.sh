@@ -264,7 +264,7 @@ return array (
   'block_chat_characters' => true,
   'log_console_commands' => false,
   'show_delete_all_players' => 'superuser',
-  'show_repairtool' => 'superuser',
+  'kill_button' => 'superuser',
   'fill_port_gaps' => true,
   'support_legacy_daemons' => false,
   'panel_db_user' => 'panel',
