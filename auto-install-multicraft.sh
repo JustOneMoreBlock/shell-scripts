@@ -124,11 +124,6 @@ user="root"
 pass="${MySQLRoot}"
 eof
 
-# Fix Remote MySQL Issues for Multicraft
-mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
-mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
-mysql -Dmysql -e "FLUSH PRIVILEGES;";
-
 # Multicraft Databases
 mysql -e "CREATE DATABASE daemon;"
 mysql -e "CREATE DATABASE panel;"
@@ -355,6 +350,11 @@ cat > rc.local << eof
 eof
 chmod +x /etc/rc.local
 /etc/rc.local
+
+# Fix Remote MySQL Issues for Multicraft
+mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
+mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
+mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
 # TESTED: Everything above should work on all supported distros.
 
