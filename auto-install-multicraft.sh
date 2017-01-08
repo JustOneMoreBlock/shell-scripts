@@ -115,6 +115,9 @@ fi
 /sbin/service mysql start
 service mysql start
 mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
+mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
+mysql -Dmysql -e "FLUSH PRIVILEGES;";
 
 # Save Generated MySQL Root Password.
 cd /root/
