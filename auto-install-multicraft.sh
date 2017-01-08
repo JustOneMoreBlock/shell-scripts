@@ -115,9 +115,6 @@ fi
 /sbin/service mysql start
 service mysql start
 mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
-mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
-mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
-mysql -Dmysql -e "FLUSH PRIVILEGES;";
 
 # Save Generated MySQL Root Password.
 cd /root/
@@ -126,6 +123,11 @@ cat > .my.cnf << eof
 user="root"
 pass="${MySQLRoot}"
 eof
+
+# Fix Remote MySQL Issues for Multicraft
+mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
+mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
+mysql -Dmysql -e "FLUSH PRIVILEGES;";
 
 # Multicraft Databases
 mysql -e "CREATE DATABASE daemon;"
