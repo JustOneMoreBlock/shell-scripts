@@ -344,9 +344,13 @@ mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraft
 mv /etc/rc.local /etc/rc.local-old
 cd /etc/
 cat > rc.local << eof
+#!/bin/sh -e
+
 /home/root/multicraft/bin/multicraft start
 /sbin/iptables -F
 /sbin/iptables -X
+
+exit 0
 eof
 chmod +x /etc/rc.local
 /etc/rc.local
