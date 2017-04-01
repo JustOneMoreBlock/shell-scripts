@@ -1,7 +1,7 @@
 #!/bin/bash
 # The MIT License (MIT)
 
-# Copyright (c) 2016 Cory Gillenkirk
+# Copyright (c) 2016-2017 Cory Gillenkirk
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -73,18 +73,16 @@ add-apt-repository -y ppa:ondrej/php
 apt-get update
 apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysql sqlite php5.6-gd php5.6-mbstring php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
-# echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-# echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
 wget https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
 dpkg -i percona-release.deb
 apt-get update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql php5-gd php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5 php5-mysqlnd php5-gd php5-xml php5-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install net-tools
@@ -106,7 +104,7 @@ yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/per
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysql php56w-mbstring sqlite php56w-gd freetype curl mlocate git sudo
+yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysqlnd php56w-mbstring php56w-gd php56w-xml sqlite freetype curl mlocate git sudo
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 fi
@@ -171,6 +169,9 @@ cd ${WebRoot}/
 git clone --depth=1 --branch=STABLE git://github.com/phpmyadmin/phpmyadmin.git phpMyAdmin
 mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
+cd ${WebRoot}/phpMyAdmin/
+wget https://getcomposer.org/composer.phar -O composer.phar
+php composer.phar update --no-dev
 
 # php.ini Auto-Detector
 PHP="$(php -r "echo php_ini_loaded_file();")"
@@ -358,6 +359,7 @@ chmod +x /etc/rc.local
 # Fix Remote MySQL Issues for Multicraft
 mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
 mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
+mysql -Dmysql -e "DROP USER ''@'%';"
 mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
 # TESTED: Everything above should work on all supported distros.
