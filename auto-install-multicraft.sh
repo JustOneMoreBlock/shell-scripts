@@ -363,15 +363,7 @@ mysql -Dmysql -e "DROP USER ''@'%';"
 mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
 # Configure New Admin Password
-# Almost working!
-# SaltPassword="$(python -c "import crypt; print crypt.crypt('${AdminPassword}', "$6$random_salt")")"
-# mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
-# mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
-
-
-# Ubuntu/Debian
-# export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-# echo ${AdminPassword}
-# SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
-# echo ${SaltPassword}
-
+SaltPassword="$(python -c "import crypt, getpass, pwd; \
+             print crypt.crypt('${AdminPassword}', '\$6\$saltsalt\$')")"
+mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
+mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
