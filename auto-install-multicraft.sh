@@ -73,7 +73,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get update
 apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
@@ -82,7 +82,7 @@ dpkg -i percona-release.deb
 apt-get update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysqlnd php5-gd php5-xml php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5 php5-mysqlnd php5-gd php5-xml php5-xml php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install net-tools
@@ -363,6 +363,15 @@ mysql -Dmysql -e "DROP USER ''@'%';"
 mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
 # Configure New Admin Password
-SaltPassword="$(python -c "import crypt; print crypt.crypt('${AdminPassword}', "$6$random_salt")")"
-mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
-mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
+# Almost working!
+# SaltPassword="$(python -c "import crypt; print crypt.crypt('${AdminPassword}', "$6$random_salt")")"
+# mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
+# mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
+
+
+# Ubuntu/Debian
+# export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+# echo ${AdminPassword}
+# SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
+# echo ${SaltPassword}
+
