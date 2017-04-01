@@ -362,14 +362,7 @@ mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
 mysql -Dmysql -e "DROP USER ''@'%';"
 mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
-# TESTED: Everything above should work on all supported distros.
-
 # Configure New Admin Password
-# SaltPassword="$(python -c 'import crypt; print crypt.crypt("${AdminPassword}", "$6$random_salt")')"
-
-# It's not passing the ${AdminPassword} variable.
-# SaltPassword="$(python -c 'import crypt; print crypt.crypt("RandomPassword", "$6$random_salt")')"
-# The password would be RandomPassword
-
-# mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
-# mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
+SaltPassword="$(python -c "import crypt; print crypt.crypt('${AdminPassword}', "$6$random_salt")")"
+mysql -p${Panel} -u panel -D panel -e "UPDATE user SET password='${SaltPassword}' WHERE name='admin';"
+mysql -p${Daemon} -u daemon -D daemon -e "UPDATE ftp_user SET password='${SaltPassword}' WHERE name='admin';"
