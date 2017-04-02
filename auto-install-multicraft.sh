@@ -82,7 +82,7 @@ dpkg -i percona-release.deb
 apt-get update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql php5-mysqlnd php5-gd php-xml-parser php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5 php5-mysql php5-gd php-xml-parser php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install net-tools
