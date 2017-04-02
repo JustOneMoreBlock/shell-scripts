@@ -9,11 +9,6 @@ MIT License
 yum -y install wget; apt-get -y install wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
 ```
 
-Auto Install cron for Automatic Security Updates: (Supported Versions: Ubuntu, Debian and CentOS 6 and 7)
-```
-yum -y install wget; sudo apt-get -y install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/automatic-security-updates.sh -O automatic-security-updates.sh; chmod +x automatic-security-updates.sh; sh automatic-security-updates.sh
-```
-
 auto-install-multicraft.sh
 - Use Google Resolve Servers
 - Password Generator
@@ -27,29 +22,19 @@ auto-install-multicraft.sh
 - Automatically configures config.php for Multicraft.
 - Automated Java Installer
 - Automated phpMyAdmin Installer with password generated blowfish setup.
-
-# Forbidden Error on Multicraft download?
-Multicraft has enabled CloudFlare Protection, and you have to enter a reCaptcha.
-
-- Fix (Either Multicraft allows that through, or provide another hosted solution.)
-- Otherwise, we offer a hosted solution.
-
-In the meantime, you can edit Line131
-https://github.com/JustOneMoreBlock/shell-scripts/blob/master/auto-install-multicraft.sh#L131
-
-Change:
-```
-http://multicraft.org/download/linux64
-```
-
-To:
-```
-Your own downloaded link. (Dropbox or w/e)
-```
-
-# Few Additional Things
 - Automated php.ini detector (Used to create a symlink to /etc/php.ini)
 - Automated memory detector (Used to configure your multicraft.conf max memory.
 
-Automated Java Installer for RPMs uses: install_java.sh file which was created by:
+# Automated Java Installer for RPMs uses: install_java.sh file which was created by:
 - Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
+
+# Tested Links
+- https://superuser.com/questions/371442/how-to-use-mkpasswd-to-generate-a-password-in-shadow-file-in-ubuntu-10-lucid
+- https://administratosphere.wordpress.com/2011/06/16/generating-passwords-using-crypt3/
+- http://unix.stackexchange.com/questions/52108/how-to-create-sha512-password-hashes-on-command-line/76337#76337
+
+
+Auto Install cron for Automatic Security Updates: (Supported Versions: Ubuntu, Debian and CentOS 6 and 7)
+```
+yum -y install wget; sudo apt-get -y install wget; wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/automatic-security-updates.sh -O automatic-security-updates.sh; chmod +x automatic-security-updates.sh; sh automatic-security-updates.sh
+```
