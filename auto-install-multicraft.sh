@@ -36,8 +36,9 @@ apt-get -y update
 yum -y update
 
 # Install: lsb-release
-apt-get -y install lsb-release curl sudo
-yum -y install redhat-lsb curl
+apt-get -y install lsb-release curl sudo ntpdate
+yum -y install redhat-lsb curl ntpdate
+/usr/sbin/ntpdate -u pool.ntp.org
 
 # Get Public Interface
 IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
@@ -77,7 +78,7 @@ apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstrin
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
-wget --no-check-certificate https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
+wget https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
 dpkg -i percona-release.deb
 apt-get update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
@@ -145,12 +146,12 @@ mv multicraft.conf.dist multicraft.conf
 mv multicraft ${WebRoot}/
 mkdir jar
 cd jar
-wget --no-check-certificate "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
+wget "https://github.com/JustOneMoreBlock/shell-scripts/blob/master/files/multicraft-jar-confs.zip?raw=true" -O multicraft-jar-confs.zip;
 unzip -o multicraft-jar-confs.zip
 rm -fv multicraft-jar-confs.zip
-wget --no-check-certificate http://s3.amazonaws.com/MCProHosting-Misc/Spigot/Spigot.jar -O Spigot.jar
-wget --no-check-certificate http://s3.amazonaws.com/MCProHosting-Misc/PaperSpigot/PaperSpigot.jar -O PaperSpigot.jar
-wget --no-check-certificate http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar -O Bungeecord.jar
+wget http://s3.amazonaws.com/MCProHosting-Misc/Spigot/Spigot.jar -O Spigot.jar
+wget http://s3.amazonaws.com/MCProHosting-Misc/PaperSpigot/PaperSpigot.jar -O PaperSpigot.jar
+wget http://ci.md-5.net/job/BungeeCord/lastSuccessfulBuild/artifact/bootstrap/target/BungeeCord.jar -O Bungeecord.jar
 cd /home/root/multicraft/
 
 # Multicraft Panel
@@ -170,7 +171,7 @@ git clone --depth=1 --branch=STABLE git://github.com/phpmyadmin/phpmyadmin.git p
 mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
 cd ${WebRoot}/phpMyAdmin/
-wget --no-check-certificate https://getcomposer.org/composer.phar -O composer.phar
+wget https://getcomposer.org/composer.phar -O composer.phar
 php composer.phar update --no-dev
 
 # php.ini Auto-Detector
@@ -298,7 +299,7 @@ sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true"
 sudo apt-get -y install oracle-java8-installer
 elif [ "${DISTRO}" = "CentOS" ] ; then
 # Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
-wget --no-check-certificate https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
+wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
 chmod +x install_java.sh
 sh install_java.sh jre8 rpm
 rm -fv install_java.sh
