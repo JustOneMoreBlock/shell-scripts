@@ -6,11 +6,12 @@ MIT License
 # Auto Install Multicraft
 (Supported Versions: Ubuntu 14-16, Debian 7/8 and CentOS 6/7)
 ```
-yum -y install wget; apt-get -y install wget; wget --no-check-certificate https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
+yum -y install wget; apt-get -y install wget; wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/auto-install-multicraft.sh -O auto-install-multicraft.sh; chmod +x auto-install-multicraft.sh; sh auto-install-multicraft.sh
 ```
 
 Built-In:
 - Uses Google Resolve Servers
+- Automatically syncs the time.
 - Password Generator: MySQL Root Password, Multicraft Daemon, Multicraft Panel, Multicraft Admin Password, and Blowfish Secret.
 - Installs: Apache, PHP 5.6 (gd, xml, curl, sqlite), Percona MySQL, curl, git, wget, and nano.
 - Automatically Configures MySQL Root Password and stores it in /root/.my.cnf
