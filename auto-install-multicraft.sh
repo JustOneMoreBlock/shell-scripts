@@ -120,7 +120,7 @@ cd /root/
 cat > .my.cnf << eof
 [client]
 user="root"
-pass="${MySQLRoot}"
+password="${MySQLRoot}"
 eof
 
 # Multicraft Databases
