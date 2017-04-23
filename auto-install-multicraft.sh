@@ -51,6 +51,7 @@ IP="$(curl -4 icanhazip.com)"
 export MySQLRoot=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export DaemonPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=32 count=1 2>/dev/null`
 
@@ -197,6 +198,7 @@ sed -i 's/\#id =\(.*\)/\Eid = 1/g' ${MulticraftConf}
 sed -i 's/\#database = mysql\(.*\)/\Edatabase = mysql:host=127.0.0.1;dbname=daemon/g' ${MulticraftConf}
 sed -i 's/\#dbUser =\(.*\)/\EdbUser = daemon/g' ${MulticraftConf}
 sed -i "s/\#dbPassword =\(.*\)/\EdbPassword = ${Daemon}/g" ${MulticraftConf}
+sed -i "s/\#password =\(.*\)/\Epassword = ${DaemonPassword}/g" ${MulticraftConf}
 sed -i 's/\#name =\(.*\)/\Ename = Server 1/g' ${MulticraftConf}
 sed -i "s/#totalMemory =\(.*\)/\EtotalMemory = ${Memory}/g" ${MulticraftConf}
 sed -i "s/\(.*\)baseDir =\(.*\)/\EbaseDir = \/home\/root\/multicraft\//g" ${MulticraftConf}
@@ -211,7 +213,7 @@ cat > config.php << eof
 return array (
   'panel_db' => 'mysql:host=localhost;dbname=panel',
   'daemon_db' => 'mysql:host=localhost;dbname=daemon',
-  'daemon_password' => 'none',
+  'daemon_password' => '${DaemonPassword}',
   'superuser' => 'admin',
   'api_enabled' => false,
   'api_allow_get' => false,
