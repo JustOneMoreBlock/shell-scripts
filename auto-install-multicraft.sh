@@ -75,7 +75,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get update
 apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git dos2unix
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
@@ -84,10 +84,10 @@ dpkg -i percona-release.deb
 apt-get update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql php5-gd php-xml-parser php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git
+apt-get -y install apache2 php5 php5-mysql php5-gd php-xml-parser php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git dos2unix
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
-yum -y install net-tools
+yum -y install dos2unix
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
@@ -100,6 +100,7 @@ elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 echo 0 > /sys/fs/selinux/enforce
+yum -y install net-tools
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
@@ -356,7 +357,9 @@ cat > rc.local << eof
 
 exit 0
 eof
+dos2unix /etc/rc.local
 chmod +x /etc/rc.local
+chmod +x /etc/rc.d/rc.local
 /etc/rc.local
 
 # Fix Remote MySQL Issues for Multicraft
