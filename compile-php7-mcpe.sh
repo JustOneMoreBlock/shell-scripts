@@ -26,9 +26,10 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 
 IP="$(curl -4 icanhazip.com)"
 
-yum -y install epel-release perl-Data-Dumper perl-Thread-Queue glibc-common glibc-utils make m4 gzip bzip2 bison gcc-c++ zip dos2unix httpd
-yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
+yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
+yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 yum -y update
+yum -y install perl-Data-Dumper perl-Thread-Queue glibc-common glibc-utils make m4 gzip bzip2 bison gcc-c++ zip dos2unix httpd nano ca-certificates
 
 cd /usr/local/src/
 wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py
