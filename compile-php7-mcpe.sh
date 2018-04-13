@@ -27,36 +27,24 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 IP="$(curl -4 icanhazip.com)"
 
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
+#yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 yum -y update
-yum -y install perl-Data-Dumper perl-Thread-Queue glibc-common glibc-utils make m4 gzip bzip2 bison gcc-c++ zip dos2unix httpd nano ca-certificates
+yum -y install perl-Data-Dumper perl-Thread-Queue glibc-common glibc-utils make m4 gzip bzip2 bison autoconf automake libtool gcc-c++ zip dos2unix httpd nano ca-certificates
 
 cd /usr/local/src/
 wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py
-wget http://ftp.gnu.org/gnu/autoconf/autoconf-latest.tar.gz -O autoconf-latest.tar.gz
-wget http://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.gz -O libtool-latest.tar.gz
-wget http://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz -O automake-latest.tar.gz
-
 python get-pip.py
 pip install getconf
-tar -xf autoconf-latest.tar.gz
-tar -xf libtool-latest.tar.gz
-tar -xf automake-latest.tar.gz
-cd /usr/local/src/autoconf*
-./configure && make && make install
-cd /usr/local/src/libtool*
-./configure && make && make install
-cd /usr/local/src/automake*
-./configure && make && make install
 
-mkdir -p /home/root/multicraft/jar/
-cd /home/root/multicraft/jar/
+MULTICRAFT="/home/root/multicraft/jar/"
+mkdir -p ${MULTICRAFT}
+cd ${MULTICRAFT}
 wget https://raw.githubusercontent.com/pmmp/php-build-scripts/master/compile.sh -O compile.sh
 dos2unix compile.sh
 chmod +x compile.sh
 sh compile.sh
 cd bin
-zip -r php7.zip php7
+zip -r php7.zip *
 mv php7.zip /var/www/html/
 /sbin/service httpd start
 echo "http://${IP}/php7.zip"
