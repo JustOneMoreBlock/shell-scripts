@@ -27,14 +27,23 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 IP="$(curl -4 icanhazip.com)"
 
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
-#yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 yum -y update
 yum -y install perl-Data-Dumper perl-Thread-Queue glibc-common glibc-utils make m4 gzip bzip2 bison autoconf automake libtool gcc-c++ zip dos2unix httpd nano ca-certificates
 
 cd /usr/local/src/
+
+# Install PIP
 wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py
 python get-pip.py
+
+# Install Getconf
 pip install getconf
+
+# Autoconf 2.69+ required.
+wget http://ftp.gnu.org/gnu/autoconf/autoconf-latest.tar.gz -O autoconf-latest.tar.gz
+tar -xf autoconf-latest.tar.gz
+cd /usr/local/src/autoconf*
+./configure && make && make install
 
 MULTICRAFT="/home/root/multicraft/jar/"
 mkdir -p ${MULTICRAFT}
