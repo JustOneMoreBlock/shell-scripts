@@ -43,8 +43,10 @@ apt-get -y autoremove
 yum -y update
 
 # Install: lsb-release
-apt-get -y install lsb-release curl sudo ntpdate ca-certificates
-yum -y install redhat-lsb curl ntpdate ca-certificates
+
+EXTRA="curl ntpdate ca-certificates"
+apt-get -y install lsb-release sudo ${EXTRA}
+yum -y install redhat-lsb ${EXTRA}
 /usr/sbin/ntpdate -u pool.ntp.org
 
 # Get Public Interface
@@ -82,7 +84,7 @@ apt-get -y install software-properties-common
 add-apt-repository -y ppa:ondrej/php
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python curl sudo ntpdate ca-certificates
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 # Debian Repo
@@ -107,7 +109,7 @@ sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/
 apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python curl sudo ntpdate ca-certificates
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install dos2unix
