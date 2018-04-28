@@ -29,6 +29,9 @@
 # - Ubuntu 17.10 x64
 # - Ubuntu 18.04 x64
 
+# - Debian 8.10 x64
+# - Debian 9.4 x64
+
 # Update Resolve Servers
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
