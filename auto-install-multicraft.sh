@@ -67,15 +67,14 @@ apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
 echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
 echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
-apt-get install -y language-pack-en-base
+apt-get -y install language-pack-en-base
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
-apt-get install -y software-properties-common
+apt-get -y install software-properties-common
 add-apt-repository -y ppa:ondrej/php
-apt-get update
-apt-get -y upgrade
+apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
@@ -174,6 +173,8 @@ git clone --depth=1 --branch=STABLE git://github.com/phpmyadmin/phpmyadmin.git p
 mv ${WebRoot}/phpMyAdmin/config.sample.inc.php ${WebRoot}/phpMyAdmin/config.inc.php
 sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFish}';/" ${WebRoot}/phpMyAdmin/config.inc.php
 cd ${WebRoot}/phpMyAdmin/
+mkdir -p ${WebRoot}/phpMyAdmin/tmp/
+chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
 wget https://getcomposer.org/composer.phar -O composer.phar
 php composer.phar update --no-dev
 
