@@ -75,7 +75,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get update
 apt-get -y upgrade
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.6 git dos2unix
+apt-get -y install apache2 php5.6 php5.6-mysqlnd sqlite php5.6-gd php5.6-mbstring php5.6-xml php5.6-curl php5.6-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
@@ -115,7 +115,8 @@ fi
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
-mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+#mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 
 # Save Generated MySQL Root Password.
 cd /root/
@@ -363,10 +364,11 @@ chmod +x /etc/rc.d/rc.local
 /etc/rc.local
 
 # Fix Remote MySQL Issues for Multicraft
-mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
-mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
-mysql -Dmysql -e "DROP USER ''@'%';"
-mysql -Dmysql -e "FLUSH PRIVILEGES;"
+#mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
+#mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
+#mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
+#mysql -Dmysql -e "DROP USER ''@'%';"
+#mysql -Dmysql -e "FLUSH PRIVILEGES;"
 
 # Configure New Admin Password
 SaltPassword="$(python -c "import crypt, getpass, pwd; \
