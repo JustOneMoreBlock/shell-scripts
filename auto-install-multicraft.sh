@@ -41,10 +41,13 @@ sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/netwo
 fi
 
 # Install: lsb-release
-EXTRA="curl ntpdate ca-certificates"
-apt-get -y install lsb-release sudo ${EXTRA}
+EXTRA="sudo curl ntpdate ca-certificates git python dos2unix"
+apt-get -y install lsb-release ${EXTRA}
 yum -y install redhat-lsb ${EXTRA}
 /usr/sbin/ntpdate -u pool.ntp.org
+
+# Get Public Interface
+IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
@@ -76,7 +79,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 # Debian Repo
@@ -102,10 +105,9 @@ apt-get -y autoremove
 apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
-yum -y install dos2unix
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
@@ -121,11 +123,11 @@ echo 0 > /sys/fs/selinux/enforce
 yum -y install net-tools
 fi
 # Begin CentOS6 and CentOS7 File Install
-yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
+yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-56.x86_64 Percona-Server-devel-56.x86_64 Percona-Server-server-56.x86_64 Percona-Server-shared-56.x86_64 php56w php56w-pdo php56w-mysqlnd php56w-mbstring php56w-gd php56w-xml sqlite freetype curl mlocate git sudo
+yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64 php72w php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml sqlite freetype mlocate ${EXTRA}
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 fi
