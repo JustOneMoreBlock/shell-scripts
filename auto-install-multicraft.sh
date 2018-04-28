@@ -43,8 +43,8 @@ apt-get -y autoremove
 yum -y update
 
 # Install: lsb-release
-apt-get -y install lsb-release curl sudo ntpdate
-yum -y install redhat-lsb curl ntpdate
+apt-get -y install lsb-release curl sudo ntpdate ca-certificates
+yum -y install redhat-lsb curl ntpdate ca-certificates
 /usr/sbin/ntpdate -u pool.ntp.org
 
 # Get Public Interface
@@ -65,6 +65,7 @@ export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=32 count=1 2>/dev/n
 # Detecting Distrubution of Linux
 # Ubuntu, Debian and CentOS
 DISTRO="$(lsb_release -si)"
+CODENAME="$(lsb_release -sc)"
 VERSION="$(lsb_release -sr | cut -d. -f1)"
 OS="$DISTRO$VERSION"
 
@@ -84,13 +85,29 @@ export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
+# Debian Repo
+cat > /etc/apt/sources.list << eof
+deb http://ftp.us.debian.org/debian/ ${CODENAME} main
+deb-src http://ftp.us.debian.org/debian/ ${CODENAME} main
+
+deb http://security.debian.org/ ${CODENAME}/updates main
+deb-src http://security.debian.org/ ${CODENAME}/updates main
+
+deb http://ftp.us.debian.org/debian/ ${CODENAME}-updates main
+deb-src http://ftp.us.debian.org/debian/ ${CODENAME}-updates main
+eof
+apt-get -y update
+apt-get -y install dirmngr apt-transport-https
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
 wget https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
 dpkg -i percona-release.deb
-apt-get update
+# Add PHP7 Repo
+wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php5 php5-mysql php5-gd php-xml-parser php5-curl php5-sqlite wget nano zip unzip percona-server-server-5.6 git dos2unix
+apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install dos2unix
