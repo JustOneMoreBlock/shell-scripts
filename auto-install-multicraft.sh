@@ -37,20 +37,11 @@ if [ -f /etc/network/interfaces ]; then
 sed -i 's/dns-nameservers \(.*\)/\Edns-nameservers 8.8.8.8 8.8.4.4/g' /etc/network/interfaces
 fi
 
-# Update
-apt-get -y update
-apt-get -y autoremove
-yum -y update
-
 # Install: lsb-release
-
 EXTRA="curl ntpdate ca-certificates"
 apt-get -y install lsb-release sudo ${EXTRA}
 yum -y install redhat-lsb ${EXTRA}
 /usr/sbin/ntpdate -u pool.ntp.org
-
-# Get Public Interface
-IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 
 # Get Public IP
 IP="$(curl -4 icanhazip.com)"
@@ -82,9 +73,11 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 apt-get -y install software-properties-common
 add-apt-repository -y ppa:ondrej/php
+apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
+export ${IP}
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 # Debian Repo
@@ -106,10 +99,12 @@ dpkg -i percona-release.deb
 # Add PHP7 Repo
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+apt-get -y autoremove
 apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 git dos2unix python ${EXTRA}
+export ${IP}
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install dos2unix
