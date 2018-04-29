@@ -52,7 +52,7 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
 PasswordGenerator () {      
-cat /dev/urandom | tr -dc "A-Za-z0-9$^&" | dd bs=$1 count=1 2>/dev/null;       
+cat /dev/urandom | tr -dc "A-Za-z0-9^" | dd bs=$1 count=1 2>/dev/null;       
 }
 
 export MySQLRoot=`PasswordGenerator 25`
@@ -131,7 +131,7 @@ sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${I
 if [ "${OS}" = "CentOS6" ] ; then
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 echo 0 >/selinux/enforce
-yum -y install php71w php71w-pdo php71w-mysqlnd php71w-mbstring php71w-gd php71w-xml
+yum -y install php71w php71w-cli php71w-pdo php71w-mysqlnd php71w-mbstring php71w-gd php71w-xml
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install net-tools psmisc
