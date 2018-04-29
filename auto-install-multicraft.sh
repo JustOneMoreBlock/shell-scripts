@@ -51,7 +51,7 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
-export MySQLRoot=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
+export MySQLRoot=`cat /dev/urandom | tr -dc "A-Za-z0-9@#$%^&" | dd bs=25 count=1 2>/dev/null`
 export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
 export DaemonPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
@@ -80,12 +80,10 @@ apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
-
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
-
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 # Debian Repo
@@ -130,7 +128,7 @@ elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 echo 0 > /sys/fs/selinux/enforce
-yum -y install net-tools
+yum -y install net-tools psmisc
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
@@ -142,8 +140,9 @@ yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 # Set MySQL Password
 /sbin/service mysql start
-service mysql start
-mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+service mysql start 
+MYSQL_TMP_PWD="$(echo "$a" | cat  /var/log/mysqld.log | grep "A temporary password is generated for root@localhost: " | sed "s|^.*localhost: ||")"
+mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 fi
 
 # Save Generated MySQL Root Password.
