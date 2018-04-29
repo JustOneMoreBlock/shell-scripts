@@ -120,25 +120,27 @@ service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
+yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
 yum -y install epel-release
+yum -y remove *mysql* *mariadb* php-*
+mv /var/lib/mysql /var/lib/mysql-old
+yum -y update
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
 if [ "${OS}" = "CentOS6" ] ; then
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 echo 0 >/selinux/enforce
+yum -y install php71w php71w-pdo php71w-mysqlnd php71w-mbstring php71w-gd php71w-xml
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install net-tools psmisc
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 echo 0 > /sys/fs/selinux/enforce
+yum -y install php72w php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml
 fi
 # Begin CentOS6 and CentOS7 File Install
-yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
-yum -y remove *mysql* *mariadb* php-*
-mv /var/lib/mysql /var/lib/mysql-old
-yum -y update
-yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64 php72w php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml sqlite freetype mlocate ${EXTRA}
+yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 # Set MySQL Password
