@@ -51,12 +51,16 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
-export MySQLRoot=`cat /dev/urandom | tr -dc "A-Za-z0-9@#$%^&" | dd bs=25 count=1 2>/dev/null`
-export Daemon=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export Panel=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export DaemonPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export AdminPassword=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=25 count=1 2>/dev/null`
-export BlowFish=`cat /dev/urandom | tr -dc A-Za-z0-9 | dd bs=32 count=1 2>/dev/null`
+PasswordGenerator () {      
+cat /dev/urandom | tr -dc "A-Za-z0-9@#$%^&" | dd bs=$1 count=1 2>/dev/null;       
+}
+
+export MySQLRoot=`PasswordGenerator 25`
+export Daemon=`PasswordGenerator 25`
+export Panel=`PasswordGenerator 25`
+export DaemonPassword=`PasswordGenerator 25`
+export AdminPassword=`PasswordGenerator 25`
+export BlowFish=`PasswordGenerator 32`
 
 # Detecting Distrubution of Linux
 # Ubuntu, Debian and CentOS
@@ -116,19 +120,18 @@ service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
+yum -y install epel-release
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
 if [ "${OS}" = "CentOS6" ] ; then
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
 yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
 echo 0 >/selinux/enforce
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
-yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+yum -y install net-tools psmisc
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 echo 0 > /sys/fs/selinux/enforce
-yum -y install net-tools psmisc
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
