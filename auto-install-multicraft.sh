@@ -383,28 +383,23 @@ mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('defaultSe
 mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraftEula', 'auto');"
 
 # Auto Start
-mv /etc/rc.local /etc/rc.local-old
-cd /etc/
-cat > rc.local << eof
-#!/bin/sh -e
-
-/home/root/multicraft/bin/multicraft start
-/sbin/iptables -F
-/sbin/iptables -X
-
-exit 0
+cat > /opt/multicraft.sh << eof
+#!/bin/bash
+# Auto Start: Multicraft
+ps -ef | grep multicraft |grep -v grep > /dev/null
+if [ $? != 0 ]
+then
+  /home/root/multicraft/bin/multicraft start > /dev/null
+  /sbin/iptables -F
+  /sbin/iptables -X
+fi
 eof
-dos2unix /etc/rc.local
-chmod +x /etc/rc.local
-chmod +x /etc/rc.d/rc.local
-/etc/rc.local
 
-# Fix Remote MySQL Issues for Multicraft
-#mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
-#mysql -e "SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('${MySQLRoot}');"
-#mysql -Dmysql -e "DELETE FROM user WHERE Password='';"
-#mysql -Dmysql -e "DROP USER ''@'%';"
-#mysql -Dmysql -e "FLUSH PRIVILEGES;"
+chmod +x /opt/multicraft.sh
+
+echo "" | crontab -
+crontab -l | { cat; echo "*/1 * * * * /opt/multicraft.sh"; } | crontab -
+crontab -l
 
 # Configure New Admin Password
 SaltPassword="$(python -c "import crypt, getpass, pwd; \
