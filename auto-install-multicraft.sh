@@ -80,6 +80,12 @@ apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+
+# Set MySQL Password
+/sbin/service mysql start
+service mysql start
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
+
 # Begin Debian
 elif [ "${DISTRO}" = "Debian" ] ; then
 # Debian Repo
@@ -106,6 +112,10 @@ apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
 apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+# Set MySQL Password
+/sbin/service mysql start
+service mysql start
+mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
@@ -130,13 +140,11 @@ yum -y update
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64 php72w php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml sqlite freetype mlocate ${EXTRA}
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
-fi
-
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
-#mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
-mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
+mysql -e "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('${MySQLRoot}');"
+fi
 
 # Save Generated MySQL Root Password.
 cd /root/
