@@ -1,7 +1,7 @@
 #!/bin/bash
 # The MIT License (MIT)
 
-# Copyright (c) 2016-2017 Cory Gillenkirk
+# Copyright (c) 2016-2018 Cory Gillenkirk
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,8 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
-PasswordGenerator () {      
-cat /dev/urandom | tr -dc "A-Za-z0-9^" | dd bs=$1 count=1 2>/dev/null;       
+PasswordGenerator () {
+cat /dev/urandom | tr -dc "a-zA-Z0-9~&*()_+-={}[]|;<,>.?/" | dd bs=$1 count=1 2>/dev/null;
 }
 
 export MySQLRoot=`PasswordGenerator 25`
@@ -120,11 +120,10 @@ service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
-yum -y install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm
-yum -y install epel-release
+yum -y install http://percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm
+yum -y install epel-release percona-release
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
-yum -y update
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
@@ -137,7 +136,7 @@ elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install net-tools psmisc
 yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
 echo 0 > /sys/fs/selinux/enforce
-yum -y install php72w php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml
+yum -y install php72w php72w-cli php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml
 fi
 # Begin CentOS6 and CentOS7 File Install
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
