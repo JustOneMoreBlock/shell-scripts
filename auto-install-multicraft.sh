@@ -52,7 +52,7 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
 PasswordGenerator () {
-cat /dev/urandom | tr -dc "a-zA-Z0-9~&*()_+-={}[]|;<,>.?/" | dd bs=$1 count=1 2>/dev/null;
+< /dev/urandom tr -dc '[:graph:]' | head -c$1;echo;
 }
 
 export MySQLRoot=`PasswordGenerator 25`
