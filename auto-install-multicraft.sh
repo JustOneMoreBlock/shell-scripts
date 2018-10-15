@@ -132,10 +132,12 @@ sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${I
 # Begin CentOS6
 if [ "${OS}" = "CentOS6" ] ; then
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-6.rpm
+echo 0 >/selinux/enforce
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
 yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 yum -y install net-tools psmisc
+echo 0 > /sys/fs/selinux/enforce
 fi
 # Begin CentOS6 and CentOS7 File Install
 PHP_VERSION="7.2.11"
