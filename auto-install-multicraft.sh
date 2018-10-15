@@ -124,7 +124,7 @@ mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install http://percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm
-yum -y install epel-release percona-release
+yum -y install epel-release percona-release cronie
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
 sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
