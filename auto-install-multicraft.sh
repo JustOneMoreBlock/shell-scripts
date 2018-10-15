@@ -143,10 +143,10 @@ yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 # Set MySQL Password
-echo "validate_password_policy=LOW" >> /etc/percona-server.conf.d/mysqld.cnf
 /sbin/service mysql start
-service mysql start 
+service mysql start
 MYSQL_TMP_PWD="$(echo "$a" | cat  /var/log/mysqld.log | grep "A temporary password is generated for root@localhost: " | sed "s|^.*localhost: ||")"
+mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "SET GLOBAL validate_password_policy=0;"
 mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 fi
 
