@@ -21,16 +21,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Supported Versions: Ubuntu, Debian and CentOS 6 and 7.
+# Supported Versions: Ubuntu, Debian and CentOS.
 
 # Supported Versions (TESTED):
 # - Ubuntu 14.04.05 x64
 # - Ubuntu 16.04.04 x64
-# - Ubuntu 17.10 x64
 # - Ubuntu 18.04 x64
 
 # - Debian 8.10 x64
-# - Debian 9.4 x64
+# - Debian 9.5 x64
 
 # - CentOS 6.9 x64
 # - CentOS 7.5 x64
