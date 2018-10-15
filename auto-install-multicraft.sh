@@ -52,7 +52,7 @@ IFACE="$(/sbin/route | grep '^default' | grep -o '[^ ]*$')"
 # Password Generator
 # MySQL, Multicraft Daemon, Multicraft Panel, Multicraft Admin, phpMyAdmin BlowFish Secret
 PasswordGenerator () {
-cat /dev/urandom | tr -dc "a-zA-Z0-9^_+=;:,.?" | dd bs=$1 count=1 2>/dev/null;
+cat /dev/urandom | tr -dc "A-Za-z0-9" | dd bs=$1 count=1 2>/dev/null;
 }
 
 export MySQLRoot=`PasswordGenerator 25`
@@ -143,6 +143,7 @@ yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona
 /sbin/chkconfig --level 2345 httpd on;
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 # Set MySQL Password
+echo "validate_password_policy=LOW" >> /etc/percona-server.conf.d/mysqld.cnf
 /sbin/service mysql start
 service mysql start 
 MYSQL_TMP_PWD="$(echo "$a" | cat  /var/log/mysqld.log | grep "A temporary password is generated for root@localhost: " | sed "s|^.*localhost: ||")"
