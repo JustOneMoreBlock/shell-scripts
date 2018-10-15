@@ -143,13 +143,13 @@ yum -y install yum-utils
 yum-config-manager -y --enable remi-php72
 yum -y --enablerepo=remi-php72 install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
-/sbin/chkconfig --level 2345 httpd on;
-systemctl start httpd
-systemctl enable httpd
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
+/sbin/chkconfig --level 2345 httpd on;
+/sbin/service httpd start
+service httpd start
+/sbin/service mysql start
+service mysql start
 # Set MySQL Password
-systemctl start mysql
-systemctl enable mysql
 MYSQL_TMP_PWD="$(echo "$a" | cat  /var/log/mysqld.log | grep "A temporary password is generated for root@localhost: " | sed "s|^.*localhost: ||")"
 mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "SET GLOBAL validate_password_policy=0;"
 mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
@@ -218,16 +218,12 @@ chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
 wget https://getcomposer.org/composer.phar -O composer.phar
 php composer.phar update --no-dev
 
-# php.ini Auto-Detector
-PHP="$(php -r "echo php_ini_loaded_file();")"
-rm -fv /etc/php.ini
-ln -s ${PHP} /etc/php.ini
-
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
 sed -i 's/post_max_size = \(.*\)/\Epost_max_size = 100M/g' /etc/php.ini
 sed -i 's/max_execution_time = \(.*\)/\Emax_execution_time = 300/g' /etc/php.ini
 sed -i 's/max_input_time = \(.*\)/\Emax_input_time = 600/g' /etc/php.ini
+sed -i 's/session.save_handler = \(.*\)/\Esession.save_handler = \/tmp/g' /etc/php.ini
 
 # Memory Checker
 MemTotal="$(awk '/MemTotal/ {print $2}' /proc/meminfo)"
