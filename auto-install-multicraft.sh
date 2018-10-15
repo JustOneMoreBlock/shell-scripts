@@ -32,6 +32,9 @@
 # - Debian 8.10 x64
 # - Debian 9.4 x64
 
+# - CentOS 6.9 x64
+# - CentOS 7.5 x64
+
 # Update Resolve Servers
 echo "nameserver 8.8.8.8" > /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
@@ -128,23 +131,25 @@ sed -i 's/DNS1=\(.*\)/\EDNS1=8.8.8.8/g' /etc/sysconfig/network-scripts/ifcfg-${I
 sed -i 's/DNS2=\(.*\)/\EDNS2=8.8.4.4/g' /etc/sysconfig/network-scripts/ifcfg-${IFACE}
 # Begin CentOS6
 if [ "${OS}" = "CentOS6" ] ; then
-yum -y install https://mirror.webtatic.com/yum/el6/latest.rpm
-echo 0 >/selinux/enforce
-yum -y install php71w php71w-cli php71w-pdo php71w-mysqlnd php71w-mbstring php71w-gd php71w-xml
+yum -y install http://rpms.remirepo.net/enterprise/remi-release-6.rpm
 # Begin CentOS7
 elif [ "${OS}" = "CentOS7" ] ; then
+yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
 yum -y install net-tools psmisc
-yum -y install https://mirror.webtatic.com/yum/el7/webtatic-release.rpm
-echo 0 > /sys/fs/selinux/enforce
-yum -y install php72w php72w-cli php72w-pdo php72w-mysqlnd php72w-mbstring php72w-gd php72w-xml
 fi
 # Begin CentOS6 and CentOS7 File Install
+PHP_VERSION="7.2.11"
+yum -y install yum-utils
+yum-config-manager -y --enable remi-php72
+yum -y --enablerepo=remi-php72 install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
 /sbin/chkconfig --level 2345 httpd on;
+systemctl start httpd
+systemctl enable httpd
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 # Set MySQL Password
-/sbin/service mysql start
-service mysql start
+systemctl start mysql
+systemctl enable mysql
 MYSQL_TMP_PWD="$(echo "$a" | cat  /var/log/mysqld.log | grep "A temporary password is generated for root@localhost: " | sed "s|^.*localhost: ||")"
 mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "SET GLOBAL validate_password_policy=0;"
 mysql -uroot -p"${MYSQL_TMP_PWD}" --connect-expired-password -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
