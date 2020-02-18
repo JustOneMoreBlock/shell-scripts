@@ -122,7 +122,7 @@ service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
-yum -y install http://percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm
+yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
 yum -y install epel-release percona-release cronie
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
@@ -139,10 +139,11 @@ yum -y install net-tools psmisc
 echo 0 > /sys/fs/selinux/enforce
 fi
 # Begin CentOS6 and CentOS7 File Install
-PHP_VERSION="7.2.11"
+PHP_VERSION="7.4.2"
+PHP_VER="74"
 yum -y install yum-utils
-yum-config-manager -y --enable remi-php72
-yum -y --enablerepo=remi-php72 install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
+yum-config-manager -y --enable remi-php${PHP_VER}
+yum -y --enablerepo=remi-php${PHP_VER} install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 /sbin/chkconfig --level 2345 httpd on;
