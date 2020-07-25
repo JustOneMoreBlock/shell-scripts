@@ -218,7 +218,7 @@ cd ${WebRoot}/phpMyAdmin/
 mkdir -p ${WebRoot}/phpMyAdmin/tmp/
 chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
 wget https://getcomposer.org/composer.phar -O composer.phar
-php composer.phar update --no-dev
+yes | php composer.phar update --no-dev
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
@@ -324,9 +324,9 @@ eof
 
 # Auto Java Installer
 if [ "${DISTRO}" = "Ubuntu" ] ; then
-sudo apt-get install openjdk-8-jre-headless
+sudo apt-get -y install openjdk-8-jre-headless
 elif [ "${DISTRO}" = "Debian" ] ; then
-sudo apt-get install openjdk-8-jre-headless
+sudo apt-get -y install openjdk-8-jre-headless
 elif [ "${DISTRO}" = "CentOS" ] ; then
 yum -y install java-1.8.0-openjdk
 fi
