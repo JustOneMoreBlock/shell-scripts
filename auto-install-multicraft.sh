@@ -86,7 +86,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+apt-get -y install apache2 composer php7.2 php7.2-zip php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
@@ -116,7 +116,7 @@ apt-get -y autoremove
 apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+apt-get -y install apache2 php7.2 php7.2-mysqlnd composer php7.2-zip sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
@@ -144,7 +144,7 @@ PHP_VERSION="7.2.11"
 yum -y install yum-utils
 yum-config-manager -y --enable remi-php72
 yum -y --enablerepo=remi-php72 install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
-yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
+yum -y install wget nano zip unzip httpd php-pecl-zip Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 /sbin/chkconfig --level 2345 httpd on;
 /sbin/service httpd start
@@ -217,8 +217,7 @@ sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFis
 cd ${WebRoot}/phpMyAdmin/
 mkdir -p ${WebRoot}/phpMyAdmin/tmp/
 chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
-wget https://getcomposer.org/composer.phar -O composer.phar
-yes | php composer.phar update --no-dev
+composer update
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
