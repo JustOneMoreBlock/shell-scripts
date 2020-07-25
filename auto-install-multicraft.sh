@@ -73,9 +73,10 @@ OS="$DISTRO$VERSION"
 
 # Begin Ubuntu
 if [ "${DISTRO}" = "Ubuntu" ] ; then
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
-echo "deb http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee /etc/apt/sources.list.d/percona.list
-echo "deb-src http://repo.percona.com/apt "$(lsb_release -sc)" main" | sudo tee -a /etc/apt/sources.list.d/percona.list
+apt-get -y install gnupg2
+apt-key adv --keyserver keys.gnupg.net --recv-keys 8507EFA5
+wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona-release_latest.deb
+sudo dpkg -i percona-release_latest.deb
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 apt-get -y install language-pack-en-base
 export LC_ALL=en_US.UTF-8
@@ -104,10 +105,10 @@ deb http://ftp.us.debian.org/debian/ ${CODENAME}-updates main
 deb-src http://ftp.us.debian.org/debian/ ${CODENAME}-updates main
 eof
 apt-get -y update
-apt-get -y install dirmngr apt-transport-https
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8507EFA5
-wget https://repo.percona.com/apt/percona-release_0.1-4.$(lsb_release -sc)_all.deb -O percona-release.deb
-dpkg -i percona-release.deb
+apt-get -y install dirmngr apt-transport-https gnupg2
+apt-key adv --keyserver keys.gnupg.net --recv-keys 8507EFA5
+wget https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona-release_latest.deb
+sudo dpkg -i percona-release_latest.deb
 # Add PHP7 Repo
 wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
 sh -c 'echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
@@ -122,7 +123,7 @@ service mysql start
 mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '${MySQLRoot}';"
 # Begin CentOS
 elif [ "${DISTRO}" = "CentOS" ] ; then
-yum -y install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+yum -y install http://percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm
 yum -y install epel-release percona-release cronie
 yum -y remove *mysql* *mariadb* php-*
 mv /var/lib/mysql /var/lib/mysql-old
@@ -139,11 +140,10 @@ yum -y install net-tools psmisc
 echo 0 > /sys/fs/selinux/enforce
 fi
 # Begin CentOS6 and CentOS7 File Install
-PHP_VERSION="7.4.2"
-PHP_VER="74"
+PHP_VERSION="7.2.11"
 yum -y install yum-utils
-yum-config-manager -y --enable remi-php${PHP_VER}
-yum -y --enablerepo=remi-php${PHP_VER} install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
+yum-config-manager -y --enable remi-php72
+yum -y --enablerepo=remi-php72 install php-${PHP_VERSION} php-cli-${PHP_VERSION} php-pdo-${PHP_VERSION} php-mysqlnd-${PHP_VERSION} php-mbstring-${PHP_VERSION} php-gd-${PHP_VERSION} php-xml-${PHP_VERSION}
 yum -y install wget nano zip unzip httpd Percona-Server-client-57.x86_64 Percona-Server-devel-57.x86_64 Percona-Server-server-57.x86_64 Percona-Server-shared-57.x86_64  sqlite freetype mlocate ${EXTRA}
 sed -i 's/SELINUX=enforcing/\ESELINUX=disabled/g' /etc/selinux/config
 /sbin/chkconfig --level 2345 httpd on;
@@ -324,28 +324,11 @@ eof
 
 # Auto Java Installer
 if [ "${DISTRO}" = "Ubuntu" ] ; then
-sudo apt-get -y install software-properties-common python-software-properties debconf-utils
-sudo apt-get -y update
-sudo add-apt-repository ppa:webupd8team/java -y
-sudo apt-get -y update
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-sudo apt-get -y install oracle-java8-installer
+sudo apt-get install openjdk-8-jre-headless
 elif [ "${DISTRO}" = "Debian" ] ; then
-echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main" | sudo tee /etc/apt/sources.list.d/java-8-debian.list
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886
-sudo apt-get -y update
-sudo apt-get -y install debconf-utils
-sudo apt-get -y update
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-sudo echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 seen true" | debconf-set-selections
-sudo apt-get -y install oracle-java8-installer
+sudo apt-get install openjdk-8-jre-headless
 elif [ "${DISTRO}" = "CentOS" ] ; then
-# Author: Mike G. aka metalcated and partially forked from n0ts (https://github.com/metalcated/)
-wget https://raw.githubusercontent.com/JustOneMoreBlock/shell-scripts/master/install_java.sh -O install_java.sh
-chmod +x install_java.sh
-sh install_java.sh jre8 rpm
-rm -fv install_java.sh
+yum -y install java-1.8.0-openjdk
 fi
 
 java -version
