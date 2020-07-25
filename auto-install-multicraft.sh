@@ -86,7 +86,7 @@ add-apt-repository -y ppa:ondrej/php
 apt-get -y autoremove
 apt-get -y update
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 composer php7.2 php7.2-zip php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+apt-get -y install apache2 php7.2 php7.2-zip php7.2-mysqlnd sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
@@ -116,7 +116,7 @@ apt-get -y autoremove
 apt-get -y update
 apt-get -y purge `dpkg -l | grep php| awk '{print $2}' |tr "\n" " "`
 export DEBIAN_FRONTEND="noninteractive"
-apt-get -y install apache2 php7.2 php7.2-mysqlnd composer php7.2-zip sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
+apt-get -y install apache2 php7.2 php7.2-mysqlnd php7.2-zip sqlite php7.2-gd php7.2-mbstring php7.2-xml php7.2-curl php7.2-sqlite wget nano zip unzip percona-server-server-5.7 ${EXTRA}
 # Set MySQL Password
 /sbin/service mysql start
 service mysql start
@@ -209,6 +209,12 @@ chmod 777 ${ProtectedConf}
 sed -i 's/dirname(__FILE__)./\E/g' index.php
 rm -fv api.php install.php
 
+# Install Composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === 'e5325b19b381bfd88ce90a5ddb7823406b2a38cff6bb704b0acc289a09c8128d4a8ce2bbafcd1fcbdc38666422fe2806') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php --install-dir=bin
+php -r "unlink('composer-setup.php');"
+
 # Automated phpMyAdmin Installer
 cd ${WebRoot}/
 git clone --depth=1 --branch=STABLE git://github.com/phpmyadmin/phpmyadmin.git phpMyAdmin
@@ -217,7 +223,7 @@ sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFis
 cd ${WebRoot}/phpMyAdmin/
 mkdir -p ${WebRoot}/phpMyAdmin/tmp/
 chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
-composer update
+composer update --no-dev
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
@@ -370,13 +376,11 @@ mysql -p${Daemon} -u daemon -D daemon -e "INSERT INTO setting VALUES ('minecraft
 # Auto Start
 cat > /opt/multicraft.sh << eof
 #!/bin/bash
-# Auto Start: Multicraft
-ps -ef | grep multicraft |grep -v grep > /dev/null
-if [ $? != 0 ]
-then
-  /home/root/multicraft/bin/multicraft start > /dev/null
+  
+  /home/root/multicraft/bin/multicraft start
   /sbin/iptables -F
   /sbin/iptables -X
+
 fi
 eof
 
