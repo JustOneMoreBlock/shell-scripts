@@ -210,10 +210,8 @@ sed -i 's/dirname(__FILE__)./\E/g' index.php
 rm -fv api.php install.php
 
 # Install Composer
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === 'e5325b19b381bfd88ce90a5ddb7823406b2a38cff6bb704b0acc289a09c8128d4a8ce2bbafcd1fcbdc38666422fe2806') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php --install-dir=bin
-php -r "unlink('composer-setup.php');"
+wget https://getcomposer.org/installer -O composer-setup.php
+php composer-setup.php --install-dir=/usr/bin
 
 # Automated phpMyAdmin Installer
 cd ${WebRoot}/
@@ -223,7 +221,7 @@ sed -i "s/\$cfg\[.blowfish_secret.\]\s*=.*/\$cfg['blowfish_secret'] = '${BlowFis
 cd ${WebRoot}/phpMyAdmin/
 mkdir -p ${WebRoot}/phpMyAdmin/tmp/
 chmod 1777 ${WebRoot}/phpMyAdmin/tmp/
-composer update --no-dev
+php /usr/bin/composer.phar update --no-dev
 
 # Modify php.ini Settings
 sed -i 's/upload_max_filesize = \(.*\)/\Eupload_max_filesize = 100M/g' /etc/php.ini
